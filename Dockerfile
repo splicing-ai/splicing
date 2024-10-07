@@ -12,7 +12,7 @@ RUN pip install --no-cache-dir poetry
 
 # Copy Poetry files and install Python dependencies
 COPY pyproject.toml poetry.lock /app/
-RUN poetry config virtualenvs.create false && poetry install --all-extras --without dev
+RUN poetry config virtualenvs.create false && poetry install --with aws,duckdb,gcp --without dev
 
 # Copy frontend files
 COPY ./splicing/frontend /app/frontend
