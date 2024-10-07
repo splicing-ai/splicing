@@ -9,7 +9,7 @@ docker run -v $(pwd)/.splicing:/.splicing \
   -it --rm splicingai/splicing:latest
 ```
 
-To install Splicing without Docker for development, please refer to the [CONTRIBUTING]() guide.
+To install Splicing without Docker for development, please refer to the [CONTRIBUTING](https://github.com/splicing-ai/splicing/blob/main/CONTRIBUTING.md) guide.
 
 ## Setup
 After running the command above, navigate to [http://localhost:3000/](http://localhost:3000/) to access the web UI of Splicing. You should see the following screen as the "Home" page:
