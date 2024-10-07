@@ -1,0 +1,54 @@
+[tool.poetry]
+name = "Splicing"
+version = "0.0.1"
+description = "Splicing is an open-source AI copilot designed to simplify data pipeline building for both data engineers and non-technical users."
+authors = ["Your Name <you@example.com>"]
+license = "MIT"
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.10"
+fastapi = ">=0.110.0,<1"
+uvicorn = ">=0.30.0,<1"
+pydantic = "^2.0"
+pydantic-settings = "^2.0"
+redis = ">=4.2.0rc1"
+pandas = "^2.0"
+pyarrow = ">=15.0"
+langchain-core = "^0.2.0"
+langchain-openai = "^0.1.0"
+langgraph = "^0.2.0"
+dbt-core = "^1.6.0"
+
+[tool.poetry.group.dev]
+optional = true
+
+[tool.poetry.group.dev.dependencies]
+pre-commit = "*"
+mkdocs = "^1.5.0"
+mkdocs-material = "^9.0"
+
+[tool.poetry.group.aws]
+optional = true
+
+[tool.poetry.group.aws.dependencies]
+boto3 = "^1.0"
+
+[tool.poetry.group.duckdb]
+optional = true
+
+[tool.poetry.group.duckdb.dependencies]
+duckdb = "^1.0"
+dbt-duckdb = "^1.0"
+
+[tool.poetry.group.gcp]
+optional = true
+
+[tool.poetry.group.gcp.dependencies]
+google-cloud-bigquery = "^3.0"
+dbt-bigquery = "^1.0"
+db-dtypes = "^1.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

@@ -1,0 +1,66 @@
+site_name: Splicing
+repo_url: https://github.com/splicing-ai/splicing
+repo_name: splicing-ai/splicing
+
+nav:
+  - Introduction: index.md
+  - Getting Started: get-started.md
+  - How-To Guides:
+    - Adding Data Integrations and LLMs: how-tos/integration-llm.md
+    - Creating a Project: how-tos/create-project.md
+    - Building Data Pipeline with Sections: how-tos/sections.md
+    - Writing and Running Code in Notebook-style Workspace: how-tos/notebook.md
+    - Getting Assistance from Copilot: how-tos/copilot.md
+    - Assembling Sections and Orchestrating Data Pipeline: how-tos/orchestration.md
+  - Architecture: architecture.md
+  - About: about.md
+
+theme:
+  name: material
+  features:
+    - navigation.tabs
+    - navigation.sections
+    - toc.integrate
+    - search.suggest
+    - search.highlight
+    - content.tabs.link
+    - content.code.annotation
+    - content.code.copy
+  language: en
+  palette:
+    - scheme: default
+      toggle:
+        icon: material/toggle-switch-off-outline
+        name: Switch to dark mode
+      primary: indigo
+      accent: indigo
+    - scheme: slate
+      toggle:
+        icon: material/toggle-switch
+        name: Switch to light mode
+      primary: indigo
+      accent: indigo
+  logo: assets/images/icon.jpg
+
+markdown_extensions:
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - admonition
+  - pymdownx.arithmatex:
+      generic: true
+  - footnotes
+  - pymdownx.details
+  - pymdownx.superfences
+  - pymdownx.mark
+  - attr_list
+  - pymdownx.emoji:
+      emoji_index: !!python/name:materialx.emoji.twemoji
+      emoji_generator: !!python/name:materialx.emoji.to_svg
+
+# extra:
+#   social:
+#     - icon: fontawesome/brands/github-alt
+#       link: https://github.com/yourusername
+#   generator: false
