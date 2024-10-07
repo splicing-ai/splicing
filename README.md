@@ -14,7 +14,7 @@
   <a href="https://splicing-ai.github.io/splicing">
     <img src="https://img.shields.io/badge/documentation-splicing.ai-orange?style=for-the-badge" alt="Documentation">
   </a>
-  <a href="https://discord.gg/WQ2GXmm4">
+  <a href="https://discord.gg/C7h5cqvjdb">
     <img src="https://img.shields.io/badge/Discord-Join%20Chat-purple?style=for-the-badge&logo=discord" alt="Join Discord Chat">
   </a>
 </p>
@@ -55,7 +55,7 @@ You can also install Splicing without Docker for development by following the in
 ## 📂 Resources
 - [Documentation](https://splicing-ai.github.io/splicing)
 - [Demo](https://youtu.be/EaVopzAGszY)
-- [Community](https://discord.gg/WQ2GXmm4)
+- [Community](https://discord.gg/C7h5cqvjdb)
 
 ## 🛠️ Tech Stacks
 - Frontend: [Next.js](https://nextjs.org/), [Tailwind CSS](https://tailwindcss.com/) and [Shadcn](https://ui.shadcn.com/)
