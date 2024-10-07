@@ -10,9 +10,18 @@ RUN apt-get update && apt-get install -y redis-server && apt-get clean && rm -rf
 # Install Poetry
 RUN pip install --no-cache-dir poetry
 
-# Copy Poetry files and install Python dependencies
+# Copy Poetry files
 COPY pyproject.toml poetry.lock /app/
-RUN poetry config virtualenvs.create false && poetry install --with aws,duckdb,gcp --without dev
+
+# Extract optional group names from pyproject.toml and install them
+RUN OPTIONAL_GROUPS=$(grep '^\[tool\.poetry\.group\.' pyproject.toml | sed 's/\[tool\.poetry\.group\.\(.*\)\]/\1/' | grep -v -E '^dev$|\.dependencies$' | sort -u | tr '\n' ',' | sed 's/,$//' ) && \
+    echo "Installing optional groups: ${OPTIONAL_GROUPS}" && \
+    poetry config virtualenvs.create false && \
+    if [ -n "${OPTIONAL_GROUPS}" ]; then \
+        poetry install --with ${OPTIONAL_GROUPS} --without dev; \
+    else \
+        poetry install --without dev; \
+    fi
 
 # Copy frontend files
 COPY ./splicing/frontend /app/frontend
