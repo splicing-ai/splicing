@@ -6,3 +6,6 @@ If you have any feedback or suggestions, please feel free to open an issue in ou
 
 ## Contribute
 We welcome contributions from everyone. Please refer to our [CONTRIBUTING](https://github.com/splicing-ai/splicing/blob/main/CONTRIBUTING.md) guide for more information.
+
+## FAQs
+Please refer to our [FAQs](https://github.com/splicing-ai/splicing/blob/main/README.md#faqs) for more information.
