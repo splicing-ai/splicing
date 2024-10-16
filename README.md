@@ -34,7 +34,7 @@ The easiest way to run Splicing is in Docker:
 
 2. Run the following command to run Splicing:
 ```bash
-docker run -v $(pwd)/.splicing:/.splicing \
+docker run -v $(pwd)/.splicing:/app/.splicing \
   -p 3000:3000 \
   -p 8000:8000 \
   -it --rm splicingai/splicing:latest

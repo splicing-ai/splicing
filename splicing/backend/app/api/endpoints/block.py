@@ -6,12 +6,14 @@ from langchain_core.messages import ToolMessage
 
 from app.api.dependencies import RedisClient, get_redis_client
 from app.api.endpoints.section import set_current_block
-from app.schema import (
+from app.generated.schema import (
     BlockMetadata,
-    BlockSetup,
     ExecuteResult,
     ExecuteReturn,
-    GenerateResult,
+    IntegrationType,
+    SectionType,
+    SettingsSectionType,
+    TransformationTool,
     UpdateCodePayload,
 )
 from app.utils.execute import (
@@ -43,12 +45,7 @@ from app.utils.project_helper import (
 )
 from app.utils.read_data import read_df_from_integration
 from app.utils.recommend import get_recommend_assistant_message, recommend
-from app.utils.types import (
-    IntegrationType,
-    SectionType,
-    SettingsSectionType,
-    TransformationTool,
-)
+from app.utils.types import BlockSetup, GenerateResult
 
 router = APIRouter()
 
@@ -59,7 +56,7 @@ async def add(
     section_id: str,
     payload: BlockMetadata,
     redis_client: RedisClient = Depends(get_redis_client),
-):
+) -> str:
     block_id = generate_id()
     await redis_client.set_block_data(
         project_id, section_id, block_id, "metadata", {"id": block_id, **payload.dict()}
@@ -78,7 +75,7 @@ async def delete(
     section_id: str,
     block_id: str,
     redis_client: RedisClient = Depends(get_redis_client),
-):
+) -> Response:
     await redis_client.delete_all_block_data(project_id, section_id, block_id)
     await redis_client.delete_block_id(project_id, section_id, block_id)
     return Response(status_code=status.HTTP_204_NO_CONTENT)
@@ -90,7 +87,7 @@ async def reset(
     section_id: str,
     block_id: str,
     redis_client: RedisClient = Depends(get_redis_client),
-):
+) -> Response:
     block_metadata = await redis_client.get_block_data(
         project_id, section_id, block_id, "metadata"
     )
@@ -108,7 +105,7 @@ async def setup(
     block_id: str,
     payload: BlockSetup,
     redis_client: RedisClient = Depends(get_redis_client),
-):
+) -> dict[str, str] | None:
     await redis_client.set_block_data(
         project_id, section_id, block_id, "setup", payload.dict()
     )
@@ -122,7 +119,7 @@ async def setup(
     ):
         integration_type = IntegrationType(payload.source)
         settings = await redis_client.get_settings_data(
-            SettingsSectionType.INTEGRATION, payload.source
+            SettingsSectionType.INTEGRATION.value, payload.source
         )
         working_dir = await get_project_dir(redis_client, project_id)
         profiles_dir = os.path.join(working_dir, "dbt_profiles")
@@ -146,7 +143,7 @@ async def reset_setup(
     section_id: str,
     block_id: str,
     redis_client: RedisClient = Depends(get_redis_client),
-):
+) -> Response:
     await redis_client.delete_block_data(project_id, section_id, block_id, "setup")
     return Response(status_code=status.HTTP_204_NO_CONTENT)
 
@@ -159,7 +156,7 @@ async def generate_code(
     redis_client: RedisClient = Depends(get_redis_client),
 ) -> GenerateResult:
     integration_settings = await redis_client.get_settings_data(
-        SettingsSectionType.INTEGRATION
+        SettingsSectionType.INTEGRATION.value
     )
     llm = await get_llm_for_project(redis_client, project_id)
     section_metadata = await redis_client.get_section_data(
@@ -202,7 +199,7 @@ async def generate_code(
     await set_current_block(project_id, section_id, block_id, redis_client)
 
     integration_settings = await redis_client.get_settings_data(
-        SettingsSectionType.INTEGRATION
+        SettingsSectionType.INTEGRATION.value
     )
     messages = [
         convert_message_to_dict(message)
@@ -251,7 +248,7 @@ async def execute_code(
     block_id: str,
     payload: UpdateCodePayload | None = None,
     redis_client: RedisClient = Depends(get_redis_client),
-):
+) -> ExecuteReturn:
     section_metadata = await redis_client.get_section_data(
         project_id, section_id, "metadata"
     )
@@ -318,7 +315,7 @@ async def execute_code(
             )
         ):
             bq_settings = await redis_client.get_settings_data(
-                SettingsSectionType.INTEGRATION, IntegrationType.BIGQUERY.value
+                SettingsSectionType.INTEGRATION.value, IntegrationType.BIGQUERY.value
             )
             files_to_copy.append(bq_settings["serviceAccountKeyFileName"])
 
@@ -361,7 +358,7 @@ async def execute_code(
             try:
                 llm = await get_llm_for_project(redis_client, project_id)
                 integration_settings = await redis_client.get_settings_data(
-                    SettingsSectionType.INTEGRATION
+                    SettingsSectionType.INTEGRATION.value
                 )
                 data_dict = read_df_from_integration(
                     llm=llm,
@@ -420,7 +417,7 @@ async def save_code(
     block_id: str,
     payload: UpdateCodePayload,
     redis_client: RedisClient = Depends(get_redis_client),
-):
+) -> GenerateResult:
     generate_result = await redis_client.get_block_data(
         project_id, section_id, block_id, "generate_result"
     )
@@ -457,7 +454,7 @@ async def recommend_techniques(
     block_id: str,
     payload: BlockSetup,
     redis_client: RedisClient = Depends(get_redis_client),
-):
+) -> dict[str, str] | None:
     section_metadata = await redis_client.get_section_data(
         project_id, section_id, "metadata"
     )
@@ -481,7 +478,7 @@ async def recommend_techniques(
             source_details = payload.sourceDetails
             llm = await get_llm_for_project(redis_client, project_id)
             integration_settings = await redis_client.get_settings_data(
-                SettingsSectionType.INTEGRATION
+                SettingsSectionType.INTEGRATION.value
             )
             data_dict = read_df_from_integration(
                 llm=llm,
@@ -505,4 +502,4 @@ async def recommend_techniques(
             )
             message = get_recommend_assistant_message(section_type, recommendations)
             await add_chat_messages(redis_client, project_id, message)
-            return message
+            return convert_message_to_dict(message)

@@ -1,4 +1,4 @@
-import { SettingsSectionType } from "@/components/types/settings";
+import { SettingsSectionType } from "@/components/types/schema-types";
 import { Separator } from "@/components/ui/separator";
 import { Toggle } from "@/components/ui/toggle";
 import { settingsSectionIconMap } from "@/data/settings";

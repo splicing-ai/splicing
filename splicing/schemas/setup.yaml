@@ -1,0 +1,97 @@
+openapi: 3.0.3
+info:
+  title: Splicing Block Setup Schemas
+  version: 0.0.1
+components:
+  schemas:
+    TransformationSetup:
+      type: object
+      properties:
+        tool:
+          type: string
+          minLength: 1
+        source:
+          type: string
+          minLength: 1
+        sourceSectionId:
+          type: string
+        sourceBlockId:
+          type: string
+        sourceDetails:
+          type: string
+        provideRecommendation:
+          type: boolean
+          default: true
+      required:
+        - source
+        - tool
+
+    OrchestrationSetup:
+      type: object
+      properties:
+        tool:
+          type: string
+          minLength: 1
+        description:
+          type: string
+      required:
+        - tool
+
+    CleaningSetup:
+      type: object
+      properties:
+        tool:
+          type: string
+          minLength: 1
+        source:
+          type: string
+          minLength: 1
+        sourceSectionId:
+          type: string
+        sourceBlockId:
+          type: string
+        sourceDetails:
+          type: string
+        provideRecommendation:
+          type: boolean
+          default: true
+      required:
+        - source
+        - tool
+
+    MovementSetup:
+      type: object
+      properties:
+        tool:
+          type: string
+          minLength: 1
+        source:
+          type: string
+          minLength: 1
+        destination:
+          type: string
+          minLength: 1
+        sourceSectionId:
+          type: string
+        sourceBlockId:
+          type: string
+        sourceDetails:
+          type: string
+        provideRecommendation:
+          type: boolean
+          default: true
+        destinationDetails:
+          type: string
+      required:
+        - tool
+        - source
+        - destination
+
+    BlockSetup:
+      oneOf:
+        - $ref: '#/components/schemas/TransformationSetup'
+        - $ref: '#/components/schemas/OrchestrationSetup'
+        - $ref: '#/components/schemas/CleaningSetup'
+        - $ref: '#/components/schemas/MovementSetup'
+
+paths: {}

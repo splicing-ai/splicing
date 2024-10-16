@@ -4,7 +4,7 @@ import Image from "next/image";
 import { useEffect } from "react";
 import Header from "@/components/common/header";
 import Sidebar from "@/components/common/sidebar";
-import { SettingsSectionType } from "@/components/types/settings";
+import { SettingsSectionType } from "@/components/types/schema-types";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -34,7 +34,7 @@ export default function Settings() {
 
   let allSectionItems;
   switch (currentSection) {
-    case SettingsSectionType.Integration:
+    case SettingsSectionType.INTEGRATION:
       allSectionItems = supportedIntegrations;
       break;
     case SettingsSectionType.LLM:
@@ -53,6 +53,7 @@ export default function Settings() {
       <div className="flex flex-col pl-40 pt-14 fixed inset-0">
         <main className="flex items-start gap-4 p-4 h-full overflow-y-auto">
           {Object.entries(allSectionItems)
+            .filter(([_, Component]) => Component !== null)
             .sort(([a], [b]) => a.localeCompare(b))
             .map(([key, Component]) => (
               <Dialog key={key}>

@@ -3,7 +3,7 @@ import { Plus, EllipsisVertical } from "lucide-react";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
-import { LLMType, SettingsSectionType } from "@/components/types/settings";
+import { LLMType, SettingsSectionType } from "@/components/types/schema-types";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,

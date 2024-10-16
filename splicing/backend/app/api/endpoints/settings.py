@@ -4,9 +4,13 @@ import yaml
 from fastapi import APIRouter, Depends, Response, status
 
 from app.api.dependencies import RedisClient, get_redis_client
-from app.schema import SettingsData
+from app.generated.schema import (
+    IntegrationType,
+    LLMType,
+    SettingsData,
+    SettingsSectionType,
+)
 from app.utils.helper import get_app_dir, standardize_name
-from app.utils.types import IntegrationType, SettingsSectionType
 
 router = APIRouter()
 
@@ -14,8 +18,8 @@ router = APIRouter()
 @router.post("/add")
 async def add(
     payload: SettingsData, redis_client: RedisClient = Depends(get_redis_client)
-):
-    integration_name = payload.key
+) -> Response:
+    integration_name = str(payload.key.value)
     settings = payload.value
     working_dir = get_app_dir()
     os.makedirs(working_dir, exist_ok=True)
@@ -50,7 +54,7 @@ async def add(
                 settings["serviceAccountKey"] = ""
 
     await redis_client.set_settings_data(
-        payload.sectionType, integration_name, settings
+        payload.sectionType.value, integration_name, settings
     )
 
     return Response(status_code=status.HTTP_204_NO_CONTENT)
@@ -59,7 +63,7 @@ async def add(
 @router.delete("/delete/{section_type}/{key}")
 async def delete(
     section_type: str, key: str, redis_client: RedisClient = Depends(get_redis_client)
-):
+) -> Response:
     section_type = SettingsSectionType(section_type)
     if section_type == SettingsSectionType.INTEGRATION:
         working_dir = get_app_dir()
@@ -79,11 +83,19 @@ async def delete(
                 if os.path.exists(credentials_path):
                     os.remove(credentials_path)
 
-    await redis_client.delete_settings_data(section_type, key)
+    await redis_client.delete_settings_data(section_type.value, key)
     return Response(status_code=status.HTTP_204_NO_CONTENT)
 
 
 @router.get("")
-async def fetch(redis_client: RedisClient = Depends(get_redis_client)):
+async def fetch(
+    redis_client: RedisClient = Depends(get_redis_client),
+) -> list[SettingsData]:
     result = await redis_client.get_all_settings_data()
+    for e in result:
+        e["sectionType"] = SettingsSectionType(e["sectionType"])
+        if e["sectionType"] == SettingsSectionType.INTEGRATION:
+            e["key"] = IntegrationType(e["key"])
+        elif e["sectionType"] == SettingsSectionType.LLM:
+            e["key"] = LLMType(e["key"])
     return [SettingsData(**e) for e in result]

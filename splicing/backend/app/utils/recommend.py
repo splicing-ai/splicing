@@ -5,9 +5,9 @@ from langchain_core.language_models import BaseChatModel
 from langchain_core.messages import AIMessage, BaseMessage, HumanMessage, SystemMessage
 from pydantic import BaseModel
 
+from app.generated.schema import SectionType
 from app.utils.helper import get_schema
 from app.utils.prompt_manager import PromptManager
-from app.utils.types import SectionType
 
 dir_path = os.path.dirname(os.path.realpath(__file__))
 prompt_manager = PromptManager(os.path.join(dir_path, "prompts.yaml"))

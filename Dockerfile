@@ -23,17 +23,17 @@ RUN OPTIONAL_GROUPS=$(grep '^\[tool\.poetry\.group\.' pyproject.toml | sed 's/\[
         poetry install --without dev; \
     fi
 
-# Copy frontend files
-COPY ./splicing/frontend /app/frontend
+# Copy the entire splicing directory
+COPY ./splicing /app/splicing
+
+# Generate schema for backend
+RUN poetry run generate-schema
 
 # Install frontend dependencies
-RUN npm ci --prefix=/app/frontend && npm cache clean --force
+RUN npm ci --prefix=/app/splicing/frontend && npm cache clean --force
 
 # Build the frontend
-RUN npm run build --prefix=/app/frontend
-
-# Copy backend files
-COPY ./splicing/backend /app/backend
+RUN npm run build --prefix=/app/splicing/frontend
 
 # Create the persistent directory
 RUN mkdir -p /.splicing

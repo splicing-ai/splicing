@@ -6,8 +6,8 @@ import { z } from "zod";
 import {
   OrchestrationTool,
   SectionType,
-  Block as BlockData,
-} from "@/components/types/section";
+  BlockData,
+} from "@/components/types/schema-types";
 import { Button } from "@/components/ui/button";
 import {
   Form,
@@ -27,12 +27,10 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/components/ui/use-toast";
+import { schemas } from "@/generated/setup";
 import useProjectStore from "@/store/project";
 
-const FormSchema = z.object({
-  tool: z.string().min(1, "Please sepcify a tool"),
-  description: z.string().optional(),
-});
+const FormSchema = schemas.OrchestrationSetup;
 
 export type OrchestrationSetup = z.infer<typeof FormSchema>;
 
@@ -62,7 +60,7 @@ const OrchestrationSetupForm: React.FC<OrchestrationSetupFormProps> = ({
   });
 
   useEffect(() => {
-    if (currentSection?.sectionType === SectionType.Orchestration) {
+    if (currentSection?.sectionType === SectionType.ORCHESTRATION) {
       form.reset(defaulValues);
     }
   }, [currentSectionId]);

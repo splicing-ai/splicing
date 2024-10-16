@@ -2,22 +2,21 @@ import { create } from 'zustand';
 import {
   SettingsSectionType,
   SettingsKey,
-  SettingsItem,
-  SettingsValue,
-} from "@/components/types/settings";
+} from "@/components/types/schema-types";
+import { SettingsValue, SettingsData } from "@/components/types/settings";
 import { backendClient } from '@/lib/backend';
 
 interface SettingsState {
   currentSection: SettingsSectionType;
   setCurrentSection: (section: SettingsSectionType) => void;
-  items: SettingsItem[];
+  items: SettingsData[];
   addItem: (sectionType: SettingsSectionType, key:SettingsKey, value: SettingsValue) => Promise<void>;
   removeItem: (sectionType: SettingsSectionType, key: SettingsKey) => Promise<void>;
   fetchAllItems: () => Promise<void>;
 }
 
 const useSettingsStore = create<SettingsState>((set) => ({
-  currentSection: SettingsSectionType.Integration,
+  currentSection: SettingsSectionType.INTEGRATION,
   setCurrentSection: (section: SettingsSectionType) => {
     set({ currentSection: section })
   },

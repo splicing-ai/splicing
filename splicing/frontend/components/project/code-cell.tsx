@@ -10,10 +10,10 @@ import "prismjs/components/prism-sql";
 import "prismjs/components/prism-yaml";
 import "prismjs/themes/prism.css";
 import {
-  Block as BlockData,
+  BlockData,
   SectionType,
   TransformationTool,
-} from "@/components/types/section";
+} from "@/components/types/schema-types";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
@@ -110,7 +110,7 @@ const CodeCell: React.FC<CodeCellProps> = ({ blockData }) => {
   };
 
   const handleExecute = async () => {
-    if (currentSection?.sectionType === SectionType.Orchestration) {
+    if (currentSection?.sectionType === SectionType.ORCHESTRATION) {
       toast({
         variant: "destructive",
         title:

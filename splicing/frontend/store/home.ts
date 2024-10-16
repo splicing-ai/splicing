@@ -1,7 +1,7 @@
 import { create } from 'zustand';
-import { ProjectMetadata } from '@/components/types/project';
+import { ProjectMetadata } from '@/components/types/schema-types';
 import { backendClient } from '@/lib/backend';
-import { LLMType } from '@/components/types/settings';
+import { LLMType } from '@/components/types/schema-types';
 
 interface HomeState {
   currentProjectId: string | undefined;
