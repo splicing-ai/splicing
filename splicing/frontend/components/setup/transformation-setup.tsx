@@ -6,12 +6,10 @@ import { z } from "zod";
 import {
   TransformationTool,
   SectionType,
-  Block as BlockData,
-} from "@/components/types/section";
-import {
+  BlockData,
   IntegrationType,
   SettingsSectionType,
-} from "@/components/types/settings";
+} from "@/components/types/schema-types";
 import { Button } from "@/components/ui/button";
 import {
   Form,
@@ -32,18 +30,12 @@ import {
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/components/ui/use-toast";
+import { schemas } from "@/generated/setup";
 import { getGenerateResultName } from "@/lib/utils";
 import useProjectStore from "@/store/project";
 import useSettingsStore from "@/store/settings";
 
-const FormSchema = z.object({
-  source: z.string().min(1, "Please select a data source"),
-  tool: z.string().min(1, "Please sepcify a tool"),
-  sourceSectionId: z.string().optional(),
-  sourceBlockId: z.string().optional(),
-  sourceDetails: z.string().optional(),
-  provideRecommendation: z.boolean().default(true),
-});
+const FormSchema = schemas.TransformationSetup;
 
 export type TransformationSetup = z.infer<typeof FormSchema>;
 
@@ -64,7 +56,7 @@ const TransformationSetupForm: React.FC<TransformationSetupFormProps> = ({
     ]);
   const integrationItems = useSettingsStore((state) =>
     state.items.filter(
-      (item) => item.sectionType == SettingsSectionType.Integration,
+      (item) => item.sectionType == SettingsSectionType.INTEGRATION,
     ),
   );
   const currentSection = getCurrentSection();
@@ -81,7 +73,7 @@ const TransformationSetupForm: React.FC<TransformationSetupFormProps> = ({
   });
 
   useEffect(() => {
-    if (currentSection?.sectionType === SectionType.Transformation) {
+    if (currentSection?.sectionType === SectionType.TRANSFORMATION) {
       form.reset(defaulValues);
     }
   }, [currentSectionId]);
@@ -228,7 +220,7 @@ const TransformationSetupForm: React.FC<TransformationSetupFormProps> = ({
             </FormItem>
           )}
         />
-        {form.watch("source") !== IntegrationType.Python && (
+        {form.watch("source") !== IntegrationType.PYTHON && (
           <FormField
             control={form.control}
             name="sourceDetails"

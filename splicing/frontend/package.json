@@ -6,7 +6,9 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "generate-schema": "mkdir -p generated && npx openapi-typescript ../schemas/schema.yaml -o generated/schema.ts --enum && npx openapi-typescript ../schemas/type.yaml -o generated/type.ts --enum && npx openapi-zod-client ../schemas/setup.yaml -o generated/setup.ts --export-schemas",
+    "postinstall": "npm run generate-schema"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.6.0",
@@ -36,6 +38,8 @@
     "lucide-react": "^0.383.0",
     "next": "14.2.3",
     "next-themes": "^0.3.0",
+    "openapi-typescript": "^7.4.1",
+    "openapi-zod-client": "^1.18.2",
     "prismjs": "^1.29.0",
     "react": "^18",
     "react-dom": "^18",

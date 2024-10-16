@@ -1,5 +1,5 @@
 import { AlertTriangle, Check } from "lucide-react";
-import { ExecuteResult } from "@/components/types/section";
+import { ExecuteResult } from "@/components/types/schema-types";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 interface ExecutionAlertProps {

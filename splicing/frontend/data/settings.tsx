@@ -3,7 +3,7 @@ import {
   SettingsSectionType,
   IntegrationType,
   LLMType,
-} from "@/components/types/settings";
+} from "@/components/types/schema-types";
 import { S3Form } from "@/components/settings/integration/s3";
 import { BigQueryForm } from "@/components/settings/integration/bigquery";
 import { DuckDBForm } from "@/components/settings/integration/duckdb";
@@ -12,17 +12,18 @@ import { PythonForm } from "@/components/settings/integration/python";
 
 
 export const settingsSectionIconMap: { [key in SettingsSectionType]: LucideIcon } = {
-  [SettingsSectionType.Integration]: Blend,
+  [SettingsSectionType.INTEGRATION]: Blend,
   [SettingsSectionType.LLM]: Bot,
 };
 
-export const supportedIntegrations: { [key in IntegrationType]: React.FC } = {
+export const supportedIntegrations: { [key in IntegrationType]: React.FC | null } = {
   [IntegrationType.S3]: S3Form,
-  [IntegrationType.BigQuery]: BigQueryForm,
-  [IntegrationType.DuckDB]: DuckDBForm,
-  [IntegrationType.Python]: PythonForm,
+  [IntegrationType.BIGQUERY]: BigQueryForm,
+  [IntegrationType.DUCKDB]: DuckDBForm,
+  [IntegrationType.PYTHON]: PythonForm,
+  [IntegrationType.OTHER]: null,
 };
 
 export const supportedLLMs: { [key in LLMType]: React.FC } = {
-  [LLMType.OpenAI]: OpenAIForm,
+  [LLMType.OPENAI]: OpenAIForm,
 };

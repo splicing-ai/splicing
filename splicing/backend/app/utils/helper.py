@@ -11,7 +11,7 @@ from langchain_core.messages import AIMessage, BaseMessage, HumanMessage, System
 from langchain_openai import ChatOpenAI
 
 from app.core.config import settings
-from app.utils.types import LLMType
+from app.generated.schema import LLMType
 
 
 def serialize_df(df: pd.DataFrame) -> str:

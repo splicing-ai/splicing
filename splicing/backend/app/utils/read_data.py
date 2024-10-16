@@ -6,9 +6,9 @@ from langchain_core.messages import BaseMessage, HumanMessage, SystemMessage
 from langchain_core.tools import InjectedToolArg, StructuredTool
 from typing_extensions import Annotated
 
+from app.generated.schema import IntegrationType
 from app.utils.helper import get_app_dir
 from app.utils.prompt_manager import PromptManager
-from app.utils.types import IntegrationType
 
 dir_path = os.path.dirname(os.path.realpath(__file__))
 prompt_manager = PromptManager(os.path.join(dir_path, "prompts.yaml"))

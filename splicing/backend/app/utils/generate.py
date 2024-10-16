@@ -6,22 +6,20 @@ import yaml
 from langchain_core.language_models import BaseChatModel
 from langchain_core.messages import HumanMessage, SystemMessage
 
-from app.schema import (
+from app.generated.schema import (
     CleaningGenerateResult,
-    GenerateResult,
+    IntegrationType,
     MovementGenerateResult,
     OrchestrationGenerateResult,
+    OrchestrationTool,
+    SectionType,
     TransformationDbtGenerateResult,
     TransformationPythonGenerateResult,
+    TransformationTool,
 )
 from app.utils.helper import get_schema, standardize_name
 from app.utils.prompt_manager import PromptManager
-from app.utils.types import (
-    IntegrationType,
-    OrchestrationTool,
-    SectionType,
-    TransformationTool,
-)
+from app.utils.types import GenerateResult
 
 dir_path = os.path.dirname(os.path.realpath(__file__))
 prompt_manager = PromptManager(os.path.join(dir_path, "prompts.yaml"))

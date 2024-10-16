@@ -8,6 +8,9 @@ splicing/backend/.venv/
 # Exclude data directory
 .splicing/
 
+# Exclude generated files
+**/generated/
+
 # Exclude version control and editor files
 .git
 **/.vscode/

@@ -1,34 +1,18 @@
-import { Message } from "@/components/types/message";
-import { ProjectMetadata } from "@/components/types/project";
 import {
+  Message,
+  ProjectMetadata,
   BlockSetup,
-  ExecuteResult,
   GenerateResult,
   SectionType,
-  Section,
-} from "@/components/types/section";
-import {
+  ExecuteReturn,
+  ProjectData,
+  LLMType,
   SettingsSectionType,
   SettingsKey,
-  SettingsItem,
-  SettingsValue,
-  LLMType,
-} from "@/components/types/settings";
+} from "@/components/types/schema-types";
+import { SettingsData, SettingsValue } from "@/components/types/settings";
 
 const backendUrl = process.env.NEXT_PUBLIC_BACKEND_BASE_URL;
-
-interface ProjectFetchReturn {
-  metadata: ProjectMetadata;
-  sections: Section[];
-  messages: Message[];
-  lastWorkedSectionId: string;
-}
-
-interface ExecuteReturn {
-  data: { [key: string]: string };
-  executeResult: ExecuteResult;
-  generateResult?: GenerateResult;
-}
 
 class BackendClient {
   private async handleResponse(response: Response) {
@@ -115,10 +99,8 @@ class BackendClient {
     return result;
   }
 
-  public async fetchProject(projectId: string): Promise<ProjectFetchReturn> {
-    const result = (await this.get(
-      `project/${projectId}`,
-    )) as ProjectFetchReturn;
+  public async fetchProject(projectId: string): Promise<ProjectData> {
+    const result = (await this.get(`project/${projectId}`)) as ProjectData;
     return result;
   }
 
@@ -138,8 +120,8 @@ class BackendClient {
     await this.delete(`settings/delete/${sectionType}/${key}`);
   }
 
-  public async fetchSettings(): Promise<SettingsItem[]> {
-    const result = (await this.get("settings")) as SettingsItem[];
+  public async fetchSettings(): Promise<SettingsData[]> {
+    const result = (await this.get("settings")) as SettingsData[];
     return result;
   }
 

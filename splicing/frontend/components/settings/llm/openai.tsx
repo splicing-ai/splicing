@@ -2,11 +2,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 
-import {
-  LLMInfo,
-  LLMType,
-  SettingsSectionType,
-} from "@/components/types/settings";
+import { LLMType, SettingsSectionType } from "@/components/types/schema-types";
 import { Button } from "@/components/ui/button";
 import {
   Form,
@@ -35,7 +31,7 @@ const OpenAISchema = z.object({
 
 export type OpenAIInfo = z.infer<typeof OpenAISchema>;
 
-const llmType = LLMType.OpenAI;
+const llmType = LLMType.OPENAI;
 
 export const OpenAIForm = () => {
   const [items, addItem, removeItem] = useSettingsStore((state) => [
@@ -45,7 +41,7 @@ export const OpenAIForm = () => {
   ]);
   const emptyValues = { model: "", apiKey: "" };
   const info =
-    (items.find((item) => item.key === llmType)?.value as LLMInfo) ??
+    (items.find((item) => item.key === llmType)?.value as OpenAIInfo) ??
     emptyValues;
   const { toast } = useToast();
   const form = useForm<OpenAIInfo>({

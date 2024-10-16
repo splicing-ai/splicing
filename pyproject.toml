@@ -2,9 +2,13 @@
 name = "Splicing"
 version = "0.0.1"
 description = "Splicing is an open-source AI copilot designed to simplify data pipeline building for both data engineers and non-technical users."
-authors = ["Your Name <you@example.com>"]
+authors = ["Splicing Team <info@splicing-ai.com>"]
 license = "MIT"
 readme = "README.md"
+repository = "https://github.com/splicing-ai/splicing"
+packages = [
+    { include = "splicing" }
+]
 
 [tool.poetry.dependencies]
 python = "^3.10"
@@ -12,6 +16,7 @@ fastapi = ">=0.110.0,<1"
 uvicorn = ">=0.30.0,<1"
 pydantic = "^2.0"
 pydantic-settings = "^2.0"
+datamodel-code-generator = ">=0.20.0"
 redis = ">=4.2.0rc1"
 pandas = "^2.0"
 pyarrow = ">=15.0"
@@ -48,6 +53,9 @@ optional = true
 google-cloud-bigquery = "^3.0"
 dbt-bigquery = "^1.0"
 db-dtypes = "^1.0"
+
+[tool.poetry.scripts]
+generate-schema = "splicing.backend.generate_schema:main"
 
 [build-system]
 requires = ["poetry-core"]

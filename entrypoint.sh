@@ -19,18 +19,18 @@ shutdown_redis() {
 trap shutdown_redis SIGTERM SIGINT
 
 # Create the persistent directory if it doesn't exist
-mkdir -p /.splicing
+mkdir -p /app/.splicing
 
 # Start Redis in the background with persistence
 echo "Starting Redis..."
-redis-server --dir /.splicing --daemonize yes
+redis-server --dir /app/.splicing --daemonize yes
 
 # Change to frontend directory and start Next.js
-cd /app/frontend
+cd /app/splicing/frontend
 echo "Starting Frontend..."
 npm start &
 
 # Change to backend directory and start FastAPI in development mode with auto-reload
-cd /app/backend
+cd /app/splicing/backend
 echo "Starting Backend..."
 uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload

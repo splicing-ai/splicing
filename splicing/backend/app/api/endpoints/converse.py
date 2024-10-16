@@ -3,7 +3,7 @@ from langchain_core.messages import AIMessage, HumanMessage
 
 from app.api.dependencies import RedisClient, get_redis_client
 from app.api.endpoints.section import set_current_block
-from app.schema import ConversationPayload
+from app.generated.schema import ConversationPayload, SectionType
 from app.utils.agent.checkpointer import AsyncRedisSaver
 from app.utils.agent.graph import create_graph
 from app.utils.agent.tools import CODE_GENERATOR_NAME
@@ -14,7 +14,6 @@ from app.utils.converse import (
 )
 from app.utils.helper import convert_message_to_dict
 from app.utils.project_helper import add_chat_messages, get_llm_for_project
-from app.utils.types import SectionType
 
 router = APIRouter()
 
@@ -135,7 +134,7 @@ async def conversation(
 async def reset_conversation(
     project_id: str,
     redis_client: RedisClient = Depends(get_redis_client),
-):
+) -> list[dict[str, str]]:
     checkpointer = AsyncRedisSaver(redis_client.redis)
     await checkpointer.adelete_checkpoint(project_id)
     initial_messages = get_initial_messages()
