@@ -6,6 +6,7 @@ import string
 import traceback
 
 import pandas as pd
+from langchain_anthropic import ChatAnthropic
 from langchain_core.language_models import BaseChatModel
 from langchain_core.messages import AIMessage, BaseMessage, HumanMessage, SystemMessage
 from langchain_openai import ChatOpenAI
@@ -32,16 +33,21 @@ def get_schema(df: pd.DataFrame) -> list[tuple[str, str, str]]:
 
 
 def get_llm(llm_type: LLMType, llm_settings: dict) -> BaseChatModel:
-    if llm_type == LLMType.OPENAI:
-        openai_key = llm_settings.get("apiKey")
+    if llm_type in [LLMType.OPENAI, LLMType.ANTHROPIC]:
+        api_key = llm_settings.get("apiKey")
         model = llm_settings.get("model")
 
-        if not openai_key or not model:
+        if not api_key or not model:
             raise ValueError(f"{llm_type} missing configuration: {llm_settings}")
 
-        return ChatOpenAI(openai_api_key=openai_key, model_name=model, temperature=0)
-    else:
-        raise ValueError(f"{llm_type} is not supported")
+        if llm_type == LLMType.OPENAI:
+            return ChatOpenAI(openai_api_key=api_key, model_name=model, temperature=0)
+        elif llm_type == LLMType.ANTHROPIC:
+            return ChatAnthropic(
+                anthropic_api_key=api_key, model_name=model, temperature=0
+            )
+
+    raise ValueError(f"{llm_type} is not supported")
 
 
 def convert_message_to_dict(message: BaseMessage) -> dict[str, str]:

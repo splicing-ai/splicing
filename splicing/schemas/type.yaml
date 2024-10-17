@@ -45,8 +45,10 @@ components:
       type: string
       enum:
         - OpenAI
+        - Anthropic
       x-enum-varnames:
         - OPENAI
+        - ANTHROPIC
 
     SettingsKey:
       oneOf:

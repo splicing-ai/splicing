@@ -60,21 +60,23 @@ export default function Settings() {
                 <DialogTrigger asChild>
                   <Button
                     variant="outline"
-                    className="relative flex flex-col gap-2 items-center w-60 h-60"
+                    className="relative flex flex-col justify-between items-center w-60 h-60 p-4"
                   >
                     {itemsKeySet.has(key) && (
                       <Badge variant="green" className="absolute top-2 right-2">
                         Added
                       </Badge>
                     )}
-                    <Image
-                      className="flex"
-                      src={`/logos/${key.toLowerCase().replace(/\s+/g, "-")}.svg`}
-                      height={90}
-                      width={90}
-                      alt={`${key} Logo`}
-                    />
-                    <span className="flex text-lg">{key}</span>
+                    <div className="flex-1 flex items-center justify-center">
+                      <Image
+                        src={`/logos/${key.toLowerCase().replace(/\s+/g, "-")}.svg`}
+                        height={90}
+                        width={90}
+                        alt={`${key} Logo`}
+                        style={{ objectFit: "contain", maxHeight: "100%" }}
+                      />
+                    </div>
+                    <span className="text-lg mt-2">{key}</span>
                   </Button>
                 </DialogTrigger>
                 <DialogContent className="sm:max-w-[425px]">
