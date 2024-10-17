@@ -1,6 +1,5 @@
 from typing import TYPE_CHECKING
 
-from langchain_core.pydantic_v1 import Extra
 from langchain_core.runnables.config import RunnableConfig
 from langchain_core.tools import BaseTool
 
@@ -19,7 +18,7 @@ class CodeGenerator(BaseTool):
     description: str = "Generates code for performing data engineering tasks"
 
     class Config:
-        extra = Extra.allow
+        extra = "allow"
 
     def __init__(
         self, redis_client: "RedisClient", section_type: SectionType | None = None
