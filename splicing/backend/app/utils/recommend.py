@@ -1,3 +1,4 @@
+import logging
 import os
 
 import pandas as pd
@@ -11,6 +12,8 @@ from app.utils.prompt_manager import PromptManager
 
 dir_path = os.path.dirname(os.path.realpath(__file__))
 prompt_manager = PromptManager(os.path.join(dir_path, "prompts.yaml"))
+
+logger = logging.getLogger(__name__)
 
 
 class RecommendResult(BaseModel):
@@ -58,6 +61,7 @@ def recommend(
     ]
     structured_llm = llm.with_structured_output(RecommendResult, method="json_mode")
     response = structured_llm.invoke(messages)
+    logger.debug("RECOMMEND - messages: %s, response: %s", messages, response)
     return response.recommendations
 
 

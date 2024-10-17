@@ -1,3 +1,5 @@
+import logging
+
 from fastapi import APIRouter, Depends
 from langchain_core.messages import AIMessage, HumanMessage
 
@@ -16,6 +18,8 @@ from app.utils.helper import convert_message_to_dict
 from app.utils.project_helper import add_chat_messages, get_llm_for_project
 
 router = APIRouter()
+
+logger = logging.getLogger(__name__)
 
 
 @router.post("/converse/{project_id}")
@@ -107,6 +111,7 @@ async def conversation(
     await graph.ainvoke({"messages": [message]}, config)
     snapshot = await graph.aget_state(config)
     response = snapshot.values["messages"][-1]
+    logger.debug("CONVERSE - response: %s", response)
     while snapshot.next == ("tools",):
         tool_call = response.tool_calls[0]
         tool = tool_call["name"]
@@ -125,8 +130,8 @@ async def conversation(
             # trigger tool
             result = await graph.ainvoke(None, config)
             response = result["messages"][-1]
+        logger.debug("CONVERSE - response: %s", response)
         snapshot = await graph.aget_state(config)
-    # print(snapshot)
     return convert_message_to_dict(response)
 
 

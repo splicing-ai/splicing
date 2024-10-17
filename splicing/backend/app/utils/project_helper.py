@@ -1,3 +1,4 @@
+import logging
 from collections import defaultdict
 
 import pandas as pd
@@ -20,6 +21,8 @@ from app.utils.helper import (
     standardize_name,
 )
 from app.utils.redis_client import RedisClient
+
+logger = logging.getLogger(__name__)
 
 
 async def get_project_dir(redis_client: RedisClient, project_id: str) -> str:
@@ -178,7 +181,9 @@ async def build_dag(redis_client: RedisClient, project_id: str) -> dict[str, dic
         if node not in adj_list:
             adj_list[node] = []
 
-    # TODO: add log
-    # print(adj_list)
-    # print(node_definitions)
+    logger.debug(
+        "BUILD DAG - node definitions: %s, adjacent list: %s",
+        node_definitions,
+        adj_list,
+    )
     return {"node_definitions": node_definitions, "adj_list": adj_list}

@@ -1,8 +1,10 @@
 import base64
 import io
+import logging
 import os.path
 import random
 import string
+import sys
 import traceback
 
 import pandas as pd
@@ -79,3 +81,14 @@ def format_exception_message(exception: Exception) -> str:
     tb = exception.__traceback__
     exception_details = traceback.format_exception(type(exception), exception, tb)
     return "".join(exception_details)
+
+
+def setup_logging(level: int = logging.WARNING):
+    logger = logging.getLogger("app")
+    logger.setLevel(level)
+    stream_handler = logging.StreamHandler(sys.stdout)
+    log_formatter = logging.Formatter(
+        "%(asctime)s - %(filename)s:%(lineno)d - %(funcName)s() - %(levelname)s - %(message)s"
+    )
+    stream_handler.setFormatter(log_formatter)
+    logger.addHandler(stream_handler)
