@@ -23,17 +23,17 @@ import {
 import { useToast } from "@/components/ui/use-toast";
 import useSettingsStore from "@/store/settings";
 
-const OpenAISchema = z.object({
+const AnthropicSchema = z.object({
   model: z.string().min(1, "Please select a model"),
-  apiKey: z.string().startsWith("sk-", "A valid OpenAI API key is required"),
+  apiKey: z.string().startsWith("sk-", "A valid Anthropic API key is required"),
   sensitiveFields: z.array(z.string()).default(["apiKey"]),
 });
 
-export type OpenAIInfo = z.infer<typeof OpenAISchema>;
+export type AnthropicInfo = z.infer<typeof AnthropicSchema>;
 
-const llmType = LLMType.OPENAI;
+const llmType = LLMType.ANTHROPIC;
 
-export const OpenAIForm = () => {
+export const AnthropicForm = () => {
   const [items, addItem, removeItem] = useSettingsStore((state) => [
     state.items,
     state.addItem,
@@ -41,15 +41,15 @@ export const OpenAIForm = () => {
   ]);
   const emptyValues = { model: "", apiKey: "" };
   const info =
-    (items.find((item) => item.key === llmType)?.value as OpenAIInfo) ??
+    (items.find((item) => item.key === llmType)?.value as AnthropicInfo) ??
     emptyValues;
   const { toast } = useToast();
-  const form = useForm<OpenAIInfo>({
-    resolver: zodResolver(OpenAISchema),
+  const form = useForm<AnthropicInfo>({
+    resolver: zodResolver(AnthropicSchema),
     defaultValues: info,
   });
 
-  const onSubmit = async (data: OpenAIInfo) => {
+  const onSubmit = async (data: AnthropicInfo) => {
     await addItem(SettingsSectionType.LLM, llmType, data);
     toast({
       title: `Added ${llmType} LLM successfully.`,
@@ -74,7 +74,7 @@ export const OpenAIForm = () => {
             render={({ field }) => (
               <FormItem>
                 <div>
-                  <FormLabel>OpenAI API Key</FormLabel>
+                  <FormLabel>Anthropic API Key</FormLabel>
                   <FormControl>
                     <Input placeholder="sk-" {...field} />
                   </FormControl>
@@ -96,10 +96,18 @@ export const OpenAIForm = () => {
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
-                    <SelectItem value="gpt-4o">GPT-4o</SelectItem>
-                    <SelectItem value="gpt-4o-mini">GPT-4o mini</SelectItem>
-                    <SelectItem value="o1-mini">o1-mini</SelectItem>
-                    <SelectItem value="o1-preview">o1-preview</SelectItem>
+                    <SelectItem value="claude-3-5-sonnet-20240620">
+                      Claude 3.5 Sonnet
+                    </SelectItem>
+                    <SelectItem value="claude-3-opus-20240229">
+                      Claude 3 Opus
+                    </SelectItem>
+                    <SelectItem value="claude-3-sonnet-20240229">
+                      Claude 3 Sonnet
+                    </SelectItem>
+                    <SelectItem value="claude-3-haiku-20240307">
+                      Claude 3 Haiku
+                    </SelectItem>
                   </SelectContent>
                 </Select>
                 <FormMessage />

@@ -3,7 +3,7 @@
 ## Installation
 The easiest way to run Splicing is in [Docker](https://docs.docker.com/engine/install/). After installing Docker, you can run Splicing by executing the following command:
 ```bash
-docker run -v $(pwd)/.splicing:/.splicing \
+docker run -v $(pwd)/.splicing:/app/.splicing \
   -p 3000:3000 \
   -p 8000:8000 \
   -it --rm splicingai/splicing:latest

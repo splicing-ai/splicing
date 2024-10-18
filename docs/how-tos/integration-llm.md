@@ -18,4 +18,5 @@ You can add various LLMs to empower your copilot in building data pipelines. For
 
 The latest version of Splicing supports the following LLM providers:
 
+  - Anthropic
   - OpenAI

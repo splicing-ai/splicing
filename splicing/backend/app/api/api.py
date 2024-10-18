@@ -10,12 +10,16 @@ from langchain_core.messages import ToolMessage
 
 from app.api.dependencies import RedisClient, get_redis_client
 from app.api.endpoints import block, converse, section, settings
-from app.schema import (
+from app.generated.schema import (
     BlockData,
+    IntegrationType,
     ProjectData,
     ProjectMetadata,
     ProjectSetupPayload,
     SectionData,
+    SectionType,
+    SettingsSectionType,
+    TransformationTool,
 )
 from app.utils.agent.checkpointer import AsyncRedisSaver
 from app.utils.agent.graph import create_graph
@@ -32,12 +36,6 @@ from app.utils.project_helper import (
     get_data_dict_in_block,
     get_llm_for_project,
     get_project_dir,
-)
-from app.utils.types import (
-    IntegrationType,
-    SectionType,
-    SettingsSectionType,
-    TransformationTool,
 )
 
 router = APIRouter()
@@ -77,7 +75,7 @@ async def add(
 @router.delete("/close/{project_id}")
 async def delete(
     project_id: str, redis_client: RedisClient = Depends(get_redis_client)
-):
+) -> Response:
     project_dir = await get_project_dir(redis_client, project_id)
     if os.path.exists(project_dir):
         shutil.rmtree(project_dir)
@@ -93,13 +91,13 @@ async def setup(
     project_id: str,
     payload: ProjectSetupPayload,
     redis_client: RedisClient = Depends(get_redis_client),
-):
+) -> Response:
     metadata = await redis_client.get_project_data(project_id, "metadata")
     existing_project_dir = metadata.get("projectDir")
     project_dir = payload.projectDir
     if project_dir and project_dir != existing_project_dir:
         if os.path.exists(project_dir):
-            return f"{project_dir} already exists"
+            return Response(content="{project_dir} already exists")
         # move the existing directory
         shutil.move(existing_project_dir, project_dir)
 
@@ -112,7 +110,7 @@ async def setup(
 @router.get("/projects")
 async def fetch_projects_metadata(
     redis_client: RedisClient = Depends(get_redis_client),
-):
+) -> list[ProjectMetadata]:
     all_project_ids = await redis_client.get_all_project_ids()
     return [
         await redis_client.get_project_data(pid, "metadata") for pid in all_project_ids
@@ -122,7 +120,7 @@ async def fetch_projects_metadata(
 @router.get("/project/{project_id}")
 async def fetch_project(
     project_id: str, redis_client: RedisClient = Depends(get_redis_client)
-):
+) -> ProjectData:
     project_metadata = await redis_client.get_project_data(project_id, "metadata")
     section_ids = await redis_client.get_all_section_ids(project_id)
     sections = []
@@ -197,7 +195,7 @@ async def fetch_project(
 @router.post("/download_code/{project_id}")
 async def download_code(
     project_id: str, redis_client: RedisClient = Depends(get_redis_client)
-):
+) -> StreamingResponse:
     project_metadata = await redis_client.get_project_data(project_id, "metadata")
     project_name = standardize_name(project_metadata["title"])
     section_ids = await redis_client.get_all_section_ids(project_id)
@@ -292,7 +290,7 @@ async def download_code(
                         )
                     ):
                         bq_settings = await redis_client.get_settings_data(
-                            SettingsSectionType.INTEGRATION,
+                            SettingsSectionType.INTEGRATION.value,
                             IntegrationType.BIGQUERY.value,
                         )
                         files_to_copy.append(bq_settings["serviceAccountKeyFileName"])

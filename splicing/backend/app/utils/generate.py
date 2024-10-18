@@ -1,4 +1,5 @@
 import json
+import logging
 import os
 from typing import Type
 
@@ -6,25 +7,25 @@ import yaml
 from langchain_core.language_models import BaseChatModel
 from langchain_core.messages import HumanMessage, SystemMessage
 
-from app.schema import (
+from app.generated.schema import (
     CleaningGenerateResult,
-    GenerateResult,
+    IntegrationType,
     MovementGenerateResult,
     OrchestrationGenerateResult,
+    OrchestrationTool,
+    SectionType,
     TransformationDbtGenerateResult,
     TransformationPythonGenerateResult,
+    TransformationTool,
 )
 from app.utils.helper import get_schema, standardize_name
 from app.utils.prompt_manager import PromptManager
-from app.utils.types import (
-    IntegrationType,
-    OrchestrationTool,
-    SectionType,
-    TransformationTool,
-)
+from app.utils.types import GenerateResult
 
 dir_path = os.path.dirname(os.path.realpath(__file__))
 prompt_manager = PromptManager(os.path.join(dir_path, "prompts.yaml"))
+
+logger = logging.getLogger(__name__)
 
 
 def get_generate_result_type(
@@ -63,9 +64,8 @@ def generate_with_llm(
     structured_llm = llm.with_structured_output(
         generate_result_type, method="json_mode"
     )
-    # print(messages)
     response = structured_llm.invoke(messages)
-    # print(response)
+    logger.debug("GENERATE CODE - messages: %s, response: %s", messages, response)
     return response
 
 
@@ -303,5 +303,8 @@ def update_generate_result(
         generate_result_type, method="json_mode"
     )
     response = structured_llm.invoke(messages)
+    logger.debug(
+        "UPDATE GENERATE RESULT - messages: %s, response: %s", messages, response
+    )
     # we need to include `change` again because code part is set to null
     return generate_result_type(**{**response.dict(), **change})

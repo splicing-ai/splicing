@@ -1,9 +1,11 @@
+import logging
+
 from fastapi import APIRouter, Depends
 from langchain_core.messages import AIMessage, HumanMessage
 
 from app.api.dependencies import RedisClient, get_redis_client
 from app.api.endpoints.section import set_current_block
-from app.schema import ConversationPayload
+from app.generated.schema import ConversationPayload, SectionType
 from app.utils.agent.checkpointer import AsyncRedisSaver
 from app.utils.agent.graph import create_graph
 from app.utils.agent.tools import CODE_GENERATOR_NAME
@@ -14,9 +16,10 @@ from app.utils.converse import (
 )
 from app.utils.helper import convert_message_to_dict
 from app.utils.project_helper import add_chat_messages, get_llm_for_project
-from app.utils.types import SectionType
 
 router = APIRouter()
+
+logger = logging.getLogger(__name__)
 
 
 @router.post("/converse/{project_id}")
@@ -108,6 +111,7 @@ async def conversation(
     await graph.ainvoke({"messages": [message]}, config)
     snapshot = await graph.aget_state(config)
     response = snapshot.values["messages"][-1]
+    logger.debug("CONVERSE - response: %s", response)
     while snapshot.next == ("tools",):
         tool_call = response.tool_calls[0]
         tool = tool_call["name"]
@@ -126,8 +130,8 @@ async def conversation(
             # trigger tool
             result = await graph.ainvoke(None, config)
             response = result["messages"][-1]
+        logger.debug("CONVERSE - response: %s", response)
         snapshot = await graph.aget_state(config)
-    # print(snapshot)
     return convert_message_to_dict(response)
 
 
@@ -135,7 +139,7 @@ async def conversation(
 async def reset_conversation(
     project_id: str,
     redis_client: RedisClient = Depends(get_redis_client),
-):
+) -> list[dict[str, str]]:
     checkpointer = AsyncRedisSaver(redis_client.redis)
     await checkpointer.adelete_checkpoint(project_id)
     initial_messages = get_initial_messages()

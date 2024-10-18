@@ -10,21 +10,30 @@ RUN apt-get update && apt-get install -y redis-server && apt-get clean && rm -rf
 # Install Poetry
 RUN pip install --no-cache-dir poetry
 
-# Copy Poetry files and install Python dependencies
+# Copy Poetry files
 COPY pyproject.toml poetry.lock /app/
-RUN poetry config virtualenvs.create false && poetry install --all-extras --without dev
 
-# Copy frontend files
-COPY ./splicing/frontend /app/frontend
+# Extract optional group names from pyproject.toml and install them
+RUN OPTIONAL_GROUPS=$(grep '^\[tool\.poetry\.group\.' pyproject.toml | sed 's/\[tool\.poetry\.group\.\(.*\)\]/\1/' | grep -v -E '^dev$|\.dependencies$' | sort -u | tr '\n' ',' | sed 's/,$//' ) && \
+    echo "Installing optional groups: ${OPTIONAL_GROUPS}" && \
+    poetry config virtualenvs.create false && \
+    if [ -n "${OPTIONAL_GROUPS}" ]; then \
+        poetry install --with ${OPTIONAL_GROUPS} --without dev; \
+    else \
+        poetry install --without dev; \
+    fi
+
+# Copy the entire splicing directory
+COPY ./splicing /app/splicing
+
+# Generate schema for backend
+RUN poetry run generate-schema
 
 # Install frontend dependencies
-RUN npm ci --prefix=/app/frontend && npm cache clean --force
+RUN npm ci --prefix=/app/splicing/frontend && npm cache clean --force
 
 # Build the frontend
-RUN npm run build --prefix=/app/frontend
-
-# Copy backend files
-COPY ./splicing/backend /app/backend
+RUN npm run build --prefix=/app/splicing/frontend
 
 # Create the persistent directory
 RUN mkdir -p /.splicing

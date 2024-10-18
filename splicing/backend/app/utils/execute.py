@@ -9,8 +9,8 @@ from typing import Any
 import yaml
 from dbt.cli.main import dbtRunner, dbtRunnerResult
 
+from app.generated.schema import IntegrationType
 from app.utils.helper import get_app_dir, standardize_name
-from app.utils.types import IntegrationType
 
 
 def get_dbt_packages(integration_type: IntegrationType) -> set[str]:

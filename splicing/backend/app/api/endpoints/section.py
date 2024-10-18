@@ -4,7 +4,7 @@ import shutil
 from fastapi import APIRouter, Depends, Response, status
 
 from app.api.dependencies import RedisClient, get_redis_client
-from app.schema import SectionMetadata
+from app.generated.schema import SectionMetadata
 from app.utils.execute import init_dbt_project, rename_dbt_profile
 from app.utils.helper import generate_id, standardize_name
 from app.utils.project_helper import context_update, get_project_dir
@@ -17,7 +17,7 @@ async def add(
     project_id: str,
     payload: SectionMetadata,
     redis_client: RedisClient = Depends(get_redis_client),
-):
+) -> str:
     section_id = generate_id()
     await redis_client.set_section_data(
         project_id, section_id, "metadata", {"id": section_id, **payload.dict()}
@@ -31,7 +31,7 @@ async def delete(
     project_id: str,
     section_id: str,
     redis_client: RedisClient = Depends(get_redis_client),
-):
+) -> Response:
     # delete dbt project dir
     metadata = await redis_client.get_section_data(project_id, section_id, "metadata")
     project_dir = await get_project_dir(redis_client, project_id)
@@ -58,7 +58,7 @@ async def rename(
     section_id: str,
     new_title: str,
     redis_client: RedisClient = Depends(get_redis_client),
-):
+) -> Response:
     # delete and re-init dbt project dir
     metadata = await redis_client.get_section_data(project_id, section_id, "metadata")
     project_dir = await get_project_dir(redis_client, project_id)
@@ -86,7 +86,7 @@ async def move(
     section_id: str,
     direction: str,
     redis_client: RedisClient = Depends(get_redis_client),
-):
+) -> Response:
     await redis_client.move_section(project_id, section_id, direction.lower())
     return Response(status_code=status.HTTP_204_NO_CONTENT)
 
@@ -97,7 +97,7 @@ async def set_current_block(
     section_id: str,
     block_id: str | None = None,
     redis_client: RedisClient = Depends(get_redis_client),
-):
+) -> Response:
     if block_id is None:
         await redis_client.delete_section_data(
             project_id, section_id, "current_block_id"

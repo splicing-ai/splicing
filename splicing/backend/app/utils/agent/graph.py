@@ -7,9 +7,9 @@ from langgraph.graph.message import add_messages
 from langgraph.prebuilt import ToolNode, tools_condition
 from typing_extensions import TypedDict
 
+from app.generated.schema import SectionType
 from app.utils.agent.checkpointer import AsyncRedisSaver
 from app.utils.agent.tools import create_tools
-from app.utils.types import SectionType
 
 if TYPE_CHECKING:
     from app.utils.redis_client import RedisClient

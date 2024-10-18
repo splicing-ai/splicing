@@ -4,7 +4,7 @@ import Image from "next/image";
 import { useEffect } from "react";
 import Header from "@/components/common/header";
 import Sidebar from "@/components/common/sidebar";
-import { SettingsSectionType } from "@/components/types/settings";
+import { SettingsSectionType } from "@/components/types/schema-types";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -34,7 +34,7 @@ export default function Settings() {
 
   let allSectionItems;
   switch (currentSection) {
-    case SettingsSectionType.Integration:
+    case SettingsSectionType.INTEGRATION:
       allSectionItems = supportedIntegrations;
       break;
     case SettingsSectionType.LLM:
@@ -53,27 +53,30 @@ export default function Settings() {
       <div className="flex flex-col pl-40 pt-14 fixed inset-0">
         <main className="flex items-start gap-4 p-4 h-full overflow-y-auto">
           {Object.entries(allSectionItems)
+            .filter(([_, Component]) => Component !== null)
             .sort(([a], [b]) => a.localeCompare(b))
             .map(([key, Component]) => (
               <Dialog key={key}>
                 <DialogTrigger asChild>
                   <Button
                     variant="outline"
-                    className="relative flex flex-col gap-2 items-center w-60 h-60"
+                    className="relative flex flex-col justify-between items-center w-60 h-60 p-4"
                   >
                     {itemsKeySet.has(key) && (
                       <Badge variant="green" className="absolute top-2 right-2">
                         Added
                       </Badge>
                     )}
-                    <Image
-                      className="flex"
-                      src={`/logos/${key.toLowerCase().replace(/\s+/g, "-")}.svg`}
-                      height={90}
-                      width={90}
-                      alt={`${key} Logo`}
-                    />
-                    <span className="flex text-lg">{key}</span>
+                    <div className="flex-1 flex items-center justify-center">
+                      <Image
+                        src={`/logos/${key.toLowerCase().replace(/\s+/g, "-")}.svg`}
+                        height={90}
+                        width={90}
+                        alt={`${key} Logo`}
+                        style={{ objectFit: "contain", maxHeight: "100%" }}
+                      />
+                    </div>
+                    <span className="text-lg mt-2">{key}</span>
                   </Button>
                 </DialogTrigger>
                 <DialogContent className="sm:max-w-[425px]">

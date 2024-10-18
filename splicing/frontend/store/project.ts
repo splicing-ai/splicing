@@ -1,7 +1,7 @@
 import { create } from 'zustand';
-import { Section, SectionType, BlockSetup } from '@/components/types/section';
-import { ProjectMetadata } from '@/components/types/project';
-import { Message } from '@/components/types/message';
+import { SectionData, SectionType, BlockSetup } from '@/components/types/schema-types';
+import { ProjectMetadata } from '@/components/types/schema-types';
+import { Message } from '@/components/types/schema-types';
 import { backendClient } from '@/lib/backend';
 
 interface ProjectState {
@@ -10,8 +10,8 @@ interface ProjectState {
   setProjectId: (id: string) => void;
   currentSectionId: string;
   setCurrentSectionId: (id: string) => void;
-  sections: Section[];
-  getCurrentSection: () => Section | undefined;
+  sections: SectionData[];
+  getCurrentSection: () => SectionData | undefined;
   addSetup: (blockId: string, setup: BlockSetup) => Promise<void>;
   resetSetup: (blockId: string) => Promise<void>;
   addSection: (sectionId: string, sectionType: SectionType) => Promise<void>;

@@ -4,9 +4,8 @@ import { z } from "zod";
 
 import {
   SettingsSectionType,
-  IntegrationInfo,
   IntegrationType,
-} from "@/components/types/settings";
+} from "@/components/types/schema-types";
 import { Button } from "@/components/ui/button";
 import {
   Form,
@@ -27,7 +26,7 @@ const DuckDBSchema = z.object({
 
 export type DuckDBInfo = z.infer<typeof DuckDBSchema>;
 
-const integrationType = IntegrationType.DuckDB;
+const integrationType = IntegrationType.DUCKDB;
 
 export const DuckDBForm = () => {
   const [items, addItem, removeItem] = useSettingsStore((state) => [
@@ -37,23 +36,23 @@ export const DuckDBForm = () => {
   ]);
   const emptyValues = { databaseFilePath: "", schema: "main" };
   const info =
-    (items.find((item) => item.key === integrationType)
-      ?.value as IntegrationInfo) ?? emptyValues;
+    (items.find((item) => item.key === integrationType)?.value as DuckDBInfo) ??
+    emptyValues;
   const { toast } = useToast();
-  const form = useForm<IntegrationInfo>({
+  const form = useForm<DuckDBInfo>({
     resolver: zodResolver(DuckDBSchema),
     defaultValues: info,
   });
 
-  const onSubmit = async (data: IntegrationInfo) => {
-    await addItem(SettingsSectionType.Integration, integrationType, data);
+  const onSubmit = async (data: DuckDBInfo) => {
+    await addItem(SettingsSectionType.INTEGRATION, integrationType, data);
     toast({
       title: `Added ${integrationType} integration successfully.`,
     });
   };
 
   const handleReset = async () => {
-    await removeItem(SettingsSectionType.Integration, integrationType);
+    await removeItem(SettingsSectionType.INTEGRATION, integrationType);
     form.reset(emptyValues);
     toast({
       title: `Reset ${integrationType} integration successfully.`,

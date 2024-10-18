@@ -1,17 +1,20 @@
 import base64
 import io
+import logging
 import os.path
 import random
 import string
+import sys
 import traceback
 
 import pandas as pd
+from langchain_anthropic import ChatAnthropic
 from langchain_core.language_models import BaseChatModel
 from langchain_core.messages import AIMessage, BaseMessage, HumanMessage, SystemMessage
 from langchain_openai import ChatOpenAI
 
 from app.core.config import settings
-from app.utils.types import LLMType
+from app.generated.schema import LLMType
 
 
 def serialize_df(df: pd.DataFrame) -> str:
@@ -32,16 +35,21 @@ def get_schema(df: pd.DataFrame) -> list[tuple[str, str, str]]:
 
 
 def get_llm(llm_type: LLMType, llm_settings: dict) -> BaseChatModel:
-    if llm_type == LLMType.OPENAI:
-        openai_key = llm_settings.get("apiKey")
+    if llm_type in [LLMType.OPENAI, LLMType.ANTHROPIC]:
+        api_key = llm_settings.get("apiKey")
         model = llm_settings.get("model")
 
-        if not openai_key or not model:
+        if not api_key or not model:
             raise ValueError(f"{llm_type} missing configuration: {llm_settings}")
 
-        return ChatOpenAI(openai_api_key=openai_key, model_name=model, temperature=0)
-    else:
-        raise ValueError(f"{llm_type} is not supported")
+        if llm_type == LLMType.OPENAI:
+            return ChatOpenAI(openai_api_key=api_key, model_name=model, temperature=0)
+        elif llm_type == LLMType.ANTHROPIC:
+            return ChatAnthropic(
+                anthropic_api_key=api_key, model_name=model, temperature=0
+            )
+
+    raise ValueError(f"{llm_type} is not supported")
 
 
 def convert_message_to_dict(message: BaseMessage) -> dict[str, str]:
@@ -73,3 +81,14 @@ def format_exception_message(exception: Exception) -> str:
     tb = exception.__traceback__
     exception_details = traceback.format_exception(type(exception), exception, tb)
     return "".join(exception_details)
+
+
+def setup_logging(level: int = logging.WARNING):
+    logger = logging.getLogger("app")
+    logger.setLevel(level)
+    stream_handler = logging.StreamHandler(sys.stdout)
+    log_formatter = logging.Formatter(
+        "%(asctime)s - %(filename)s:%(lineno)d - %(funcName)s() - %(levelname)s - %(message)s"
+    )
+    stream_handler.setFormatter(log_formatter)
+    logger.addHandler(stream_handler)

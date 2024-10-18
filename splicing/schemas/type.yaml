@@ -1,0 +1,86 @@
+openapi: 3.0.3
+info:
+  title: Splicing Type Schemas
+  version: 0.0.1
+components:
+  schemas:
+    SectionType:
+      type: string
+      enum:
+        - Movement
+        - Cleaning
+        - Transformation
+        - Orchestration
+      x-enum-varnames:
+        - MOVEMENT
+        - CLEANING
+        - TRANSFORMATION
+        - ORCHESTRATION
+
+    SettingsSectionType:
+      type: string
+      enum:
+        - Integration
+        - LLM
+      x-enum-varnames:
+        - INTEGRATION
+        - LLM
+
+    IntegrationType:
+      type: string
+      enum:
+        - Amazon S3
+        - Google BigQuery
+        - DuckDB
+        - Python Environment
+        - Other
+      x-enum-varnames:
+        - S3
+        - BIGQUERY
+        - DUCKDB
+        - PYTHON
+        - OTHER
+
+    LLMType:
+      type: string
+      enum:
+        - OpenAI
+        - Anthropic
+      x-enum-varnames:
+        - OPENAI
+        - ANTHROPIC
+
+    SettingsKey:
+      oneOf:
+        - $ref: '#/components/schemas/IntegrationType'
+        - $ref: '#/components/schemas/LLMType'
+
+    MovementTool:
+      type: string
+      enum:
+        - Python
+      x-enum-varnames:
+        - PYTHON
+
+    CleaningTool:
+      type: string
+      enum:
+        - Pandas
+      x-enum-varnames:
+        - PANDAS
+
+    TransformationTool:
+      type: string
+      enum:
+        - DBT
+        - Pandas
+      x-enum-varnames:
+        - DBT
+        - PANDAS
+
+    OrchestrationTool:
+      type: string
+      enum:
+        - Airflow
+      x-enum-varnames:
+        - AIRFLOW

@@ -38,6 +38,7 @@ cd splicing/backend
 pip install poetry
 # also install extra dependencies if necesssary, e.g., --with dev,aws,duckdb
 poetry install --with dev
+poetry run generate-schema
 poetry run uvicorn app.main:app --reload
 ```
 

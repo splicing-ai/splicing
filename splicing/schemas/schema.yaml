@@ -1,0 +1,263 @@
+openapi: 3.0.3
+info:
+  title: Splicing Schemas
+  version: 0.0.1
+components:
+  schemas:
+    Message:
+      type: object
+      additionalProperties:
+        type: string
+
+    PythonGenerateResult:
+      type: object
+      required:
+        - functionName
+        - functionArgs
+        - returnValue
+        - code
+      properties:
+        functionName:
+          type: string
+        functionArgs:
+          type: object
+          additionalProperties: true
+        returnValue:
+          type: string
+        code:
+          type: string
+        packages:
+          type: array
+          items:
+            type: string
+          nullable: true
+
+    MovementGenerateResult:
+      allOf:
+        - $ref: '#/components/schemas/PythonGenerateResult'
+
+    CleaningGenerateResult:
+      allOf:
+        - $ref: '#/components/schemas/PythonGenerateResult'
+
+    TransformationPythonGenerateResult:
+      allOf:
+        - $ref: '#/components/schemas/PythonGenerateResult'
+
+    TransformationDbtGenerateResult:
+      type: object
+      required:
+        - modelName
+        - model
+        - properties
+      properties:
+        modelName:
+          type: string
+        model:
+          type: string
+        properties:
+          type: string
+
+    OrchestrationGenerateResult:
+      type: object
+      required:
+        - dagName
+        - code
+      properties:
+        dagName:
+          type: string
+        code:
+          type: string
+
+    TransformationGenerateResult:
+      oneOf:
+        - $ref: '#/components/schemas/TransformationPythonGenerateResult'
+        - $ref: '#/components/schemas/TransformationDbtGenerateResult'
+
+    GenerateResult:
+      oneOf:
+        - $ref: '#/components/schemas/MovementGenerateResult'
+        - $ref: '#/components/schemas/CleaningGenerateResult'
+        - $ref: '#/components/schemas/TransformationGenerateResult'
+        - $ref: '#/components/schemas/OrchestrationGenerateResult'
+
+    ExecuteResult:
+      type: object
+      properties:
+        returnValue:
+          type: string
+          nullable: true
+        error:
+          type: string
+          nullable: true
+
+    BlockMetadata:
+      type: object
+      required:
+        - numRows
+      properties:
+        numRows:
+          type: integer
+
+    BlockData:
+      type: object
+      required:
+        - id
+        - numRows
+      properties:
+        id:
+          type: string
+        numRows:
+          type: integer
+        generateResult:
+          $ref: '#/components/schemas/GenerateResult'
+        data:
+          type: object
+          additionalProperties:
+            type: string
+        executeResult:
+          $ref: '#/components/schemas/ExecuteResult'
+        setup:
+          $ref: './setup.yaml#/components/schemas/BlockSetup'
+
+    SectionMetadata:
+      type: object
+      required:
+        - title
+        - sectionType
+      properties:
+        title:
+          type: string
+        sectionType:
+          $ref: './type.yaml#/components/schemas/SectionType'
+
+    SectionData:
+      type: object
+      required:
+        - id
+        - title
+        - sectionType
+        - blocks
+      properties:
+        id:
+          type: string
+        title:
+          type: string
+        sectionType:
+          $ref: './type.yaml#/components/schemas/SectionType'
+        blocks:
+          type: array
+          items:
+            $ref: '#/components/schemas/BlockData'
+        currentBlockId:
+          type: string
+          nullable: true
+
+    ConversationPayload:
+      type: object
+      required:
+        - message
+        - currentSectionId
+      properties:
+        message:
+          $ref: '#/components/schemas/Message'
+        currentSectionId:
+          type: string
+
+    ProjectMetadata:
+      type: object
+      required:
+        - id
+        - title
+        - createdOn
+        - modifiedOn
+        - llm
+        - projectDir
+      properties:
+        id:
+          type: string
+        title:
+          type: string
+        createdOn:
+          type: string
+        modifiedOn:
+          type: string
+        llm:
+          $ref: './type.yaml#/components/schemas/LLMType'
+        projectDir:
+          type: string
+
+    ProjectSetupPayload:
+      type: object
+      required:
+        - title
+        - llm
+      properties:
+        title:
+          type: string
+        llm:
+          $ref: './type.yaml#/components/schemas/LLMType'
+        projectDir:
+          type: string
+          default: ""
+
+    ProjectData:
+      type: object
+      required:
+        - metadata
+        - sections
+        - messages
+      properties:
+        metadata:
+          $ref: '#/components/schemas/ProjectMetadata'
+        sections:
+          type: array
+          items:
+            $ref: '#/components/schemas/SectionData'
+        messages:
+          type: array
+          items:
+            $ref: '#/components/schemas/Message'
+        lastWorkedSectionId:
+          type: string
+          nullable: true
+
+    SettingsData:
+      type: object
+      required:
+        - sectionType
+        - key
+        - value
+      properties:
+        sectionType:
+          $ref: './type.yaml#/components/schemas/SettingsSectionType'
+        key:
+          $ref: './type.yaml#/components/schemas/SettingsKey'
+        value:
+          type: object
+          additionalProperties: true
+
+    UpdateCodePayload:
+      type: object
+      required:
+        - code
+      properties:
+        code:
+          type: array
+          items:
+            type: string
+
+    ExecuteReturn:
+      type: object
+      required:
+        - data
+        - executeResult
+      properties:
+        data:
+          type: object
+          additionalProperties:
+            type: string
+        executeResult:
+          $ref: '#/components/schemas/ExecuteResult'
+        generateResult:
+          $ref: '#/components/schemas/GenerateResult'

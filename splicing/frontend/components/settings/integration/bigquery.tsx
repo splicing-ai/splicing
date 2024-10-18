@@ -5,10 +5,9 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 
 import {
-  IntegrationInfo,
   IntegrationType,
   SettingsSectionType,
-} from "@/components/types/settings";
+} from "@/components/types/schema-types";
 import { Button } from "@/components/ui/button";
 import {
   Form,
@@ -44,7 +43,7 @@ const BigQuerySchema = z
 
 export type BigQueryInfo = z.infer<typeof BigQuerySchema>;
 
-const integrationType = IntegrationType.BigQuery;
+const integrationType = IntegrationType.BIGQUERY;
 
 export const BigQueryForm = () => {
   const [items, addItem, removeItem] = useSettingsStore((state) => [
@@ -60,9 +59,9 @@ export const BigQueryForm = () => {
   };
   const info =
     (items.find((item) => item.key === integrationType)
-      ?.value as IntegrationInfo) ?? emptyValues;
+      ?.value as BigQueryInfo) ?? emptyValues;
   const { toast } = useToast();
-  const form = useForm<IntegrationInfo>({
+  const form = useForm<BigQueryInfo>({
     resolver: zodResolver(BigQuerySchema),
     defaultValues: info,
   });
@@ -83,15 +82,15 @@ export const BigQueryForm = () => {
     }
   };
 
-  const onSubmit = async (data: IntegrationInfo) => {
-    await addItem(SettingsSectionType.Integration, integrationType, data);
+  const onSubmit = async (data: BigQueryInfo) => {
+    await addItem(SettingsSectionType.INTEGRATION, integrationType, data);
     toast({
       title: `Added ${integrationType} integration successfully.`,
     });
   };
 
   const handleReset = async () => {
-    await removeItem(SettingsSectionType.Integration, integrationType);
+    await removeItem(SettingsSectionType.INTEGRATION, integrationType);
     form.reset(emptyValues);
     toast({
       title: `Reset ${integrationType} integration successfully.`,

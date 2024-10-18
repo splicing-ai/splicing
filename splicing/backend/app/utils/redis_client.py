@@ -7,7 +7,6 @@ import pandas as pd
 from redis import asyncio as aioredis
 
 from app.utils.helper import serialize_df
-from app.utils.types import SettingsSectionType
 
 
 class CustomJsonEncoder(json.JSONEncoder):
@@ -115,14 +114,14 @@ class RedisClient:
             await self._delete(key)
 
     async def get_settings_data(
-        self, section_type: SettingsSectionType, key: str | None = None
+        self, section_type: str, key: str | None = None
     ) -> dict:
         if key:
-            result = await self._get(f"settings:{section_type.value}:{key}")
+            result = await self._get(f"settings:{section_type}:{key}")
             return result
         else:
             result = {}
-            async for key in self.redis.scan_iter(f"settings:{section_type.value}:*"):
+            async for key in self.redis.scan_iter(f"settings:{section_type}:*"):
                 _, _, key_name = key.split(":")
                 value = await self._get(key)
                 result[key_name] = value
@@ -135,22 +134,18 @@ class RedisClient:
             value = await self._get(key)
             result.append(
                 {
-                    "sectionType": SettingsSectionType(section_type),
+                    "sectionType": section_type,
                     "key": key_name,
                     "value": value,
                 }
             )
         return result
 
-    async def set_settings_data(
-        self, section_type: SettingsSectionType, key: str, value: dict
-    ) -> None:
-        await self._set(f"settings:{section_type.value}:{key}", value)
+    async def set_settings_data(self, section_type: str, key: str, value: dict) -> None:
+        await self._set(f"settings:{section_type}:{key}", value)
 
-    async def delete_settings_data(
-        self, section_type: SettingsSectionType, key: str
-    ) -> None:
-        await self._delete(f"settings:{section_type.value}:{key}")
+    async def delete_settings_data(self, section_type: str, key: str) -> None:
+        await self._delete(f"settings:{section_type}:{key}")
 
     async def get_all_section_ids(self, project_id: str) -> list:
         key = f"{project_id}:sections"

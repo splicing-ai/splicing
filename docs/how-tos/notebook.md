@@ -65,7 +65,7 @@ You can run the code in a block by clicking the "Run" button at any time. After 
 
   - **Data Preview**: Data is a first-class citizen in Splicing. If your code executes successfully, Splicing Copilot will automatically read the data from the destination and display a sample of the data in the "Data Preview" tab (even with multiple destinations). However, note that this is based on Splicing Copilot's best effort, so the data might not be displayed if Splicing Copilot fails to read it from the destination.  
   - **Return Value**: (Python only) The return value of your Python function, displayed if Splicing Copilot fails to read the data from the destination, even though your function executed successfully.
-  - **Error**: The error message and stack trace from the failed code execution. You can ask Splicing Copilot to help debug the error.
+  - **Error**: The error message and stack trace from the failed code execution. You can ask Splicing Copilot to help [debug the error](copilot.md#debugging).
 
 ## Setting Current Block
 Similar to a Jupyter Notebook, a section can contain multiple blocks. To help Copilot better understand the context of the requested data engineering task and generate code within a block, you can set or unset a block as the current block by [clicking its name toggle](#generating-code-in-a-block) if there are multiple blocks in a section. When you click the "Generate", "Run", or "Save" button for a block, it will automatically be set as the current block.

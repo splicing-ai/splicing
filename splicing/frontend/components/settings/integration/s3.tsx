@@ -4,9 +4,8 @@ import { z } from "zod";
 
 import {
   SettingsSectionType,
-  IntegrationInfo,
   IntegrationType,
-} from "@/components/types/settings";
+} from "@/components/types/schema-types";
 import { Button } from "@/components/ui/button";
 import {
   Form,
@@ -45,23 +44,23 @@ export const S3Form = () => {
   ]);
   const emptyValues = { uri: "", accessKey: "", secretKey: "" };
   const info =
-    (items.find((item) => item.key === integrationType)
-      ?.value as IntegrationInfo) ?? emptyValues;
+    (items.find((item) => item.key === integrationType)?.value as S3Info) ??
+    emptyValues;
   const { toast } = useToast();
-  const form = useForm<IntegrationInfo>({
+  const form = useForm<S3Info>({
     resolver: zodResolver(S3Schema),
     defaultValues: info,
   });
 
-  const onSubmit = async (data: IntegrationInfo) => {
-    await addItem(SettingsSectionType.Integration, integrationType, data);
+  const onSubmit = async (data: S3Info) => {
+    await addItem(SettingsSectionType.INTEGRATION, integrationType, data);
     toast({
       title: `Added ${integrationType} data integration successfully.`,
     });
   };
 
   const handleReset = async () => {
-    await removeItem(SettingsSectionType.Integration, integrationType);
+    await removeItem(SettingsSectionType.INTEGRATION, integrationType);
     form.reset(emptyValues);
     toast({
       title: `Reset ${integrationType} data integration successfully.`,

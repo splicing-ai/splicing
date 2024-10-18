@@ -3,7 +3,7 @@ import { Plus } from "lucide-react";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
-import { SectionType } from "@/components/types/section";
+import { SectionType } from "@/components/types/schema-types";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,

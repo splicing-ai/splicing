@@ -13,7 +13,7 @@ import CleaningSetupForm from "@/components/setup/cleaning-setup";
 import MovementSetupForm from "@/components/setup/movement-setup";
 import OrchestrationSetupForm from "@/components/setup/orchestration-setup";
 import TransformationSetupForm from "@/components/setup/transformation-setup";
-import { Block as BlockData, SectionType } from "@/components/types/section";
+import { BlockData, SectionType } from "@/components/types/schema-types";
 import { Button } from "@/components/ui/button";
 import {
   Popover,
@@ -31,10 +31,10 @@ import { getGenerateResultName } from "@/lib/utils";
 import useProjectStore from "@/store/project";
 
 const sectionSetupComponents = {
-  [SectionType.Movement]: MovementSetupForm,
-  [SectionType.Cleaning]: CleaningSetupForm,
-  [SectionType.Transformation]: TransformationSetupForm,
-  [SectionType.Orchestration]: OrchestrationSetupForm,
+  [SectionType.MOVEMENT]: MovementSetupForm,
+  [SectionType.CLEANING]: CleaningSetupForm,
+  [SectionType.TRANSFORMATION]: TransformationSetupForm,
+  [SectionType.ORCHESTRATION]: OrchestrationSetupForm,
 };
 
 interface BlockProps {

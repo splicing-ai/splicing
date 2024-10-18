@@ -1,3 +1,4 @@
+import logging
 import os
 
 import pandas as pd
@@ -6,12 +7,14 @@ from langchain_core.messages import BaseMessage, HumanMessage, SystemMessage
 from langchain_core.tools import InjectedToolArg, StructuredTool
 from typing_extensions import Annotated
 
+from app.generated.schema import IntegrationType
 from app.utils.helper import get_app_dir
 from app.utils.prompt_manager import PromptManager
-from app.utils.types import IntegrationType
 
 dir_path = os.path.dirname(os.path.realpath(__file__))
 prompt_manager = PromptManager(os.path.join(dir_path, "prompts.yaml"))
+
+logger = logging.getLogger(__name__)
 
 
 def get_read_data_tool(integration_type: IntegrationType) -> StructuredTool | None:
@@ -111,10 +114,11 @@ def read_df_from_integration(
                 messages = get_read_data_messages(
                     source, source_details, settings, generate_result
                 )
-                # print(messages)
                 llm_with_tools = llm.bind_tools([read_data_tool])
                 response = llm_with_tools.invoke(messages)
-                # print(response)
+                logger.debug(
+                    "READ DATA - messages: %s, response: %s", messages, response
+                )
                 if tool_calls := response.tool_calls:
                     for tool_call in tool_calls:
                         tool_call_args = tool_call.get("args", {})
@@ -139,10 +143,8 @@ def read_df_from_integration(
                                 )
                             if key is not None and df is not None:
                                 result[key] = df
-                        except Exception:
-                            # TODO: log LLM failure
-                            # print(ex)
-                            pass
+                        except Exception as ex:
+                            logger.error("READ DATA - exception: %s", ex)
     return result
 
 
