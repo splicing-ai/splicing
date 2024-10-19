@@ -8,7 +8,7 @@ from langchain_core.tools import InjectedToolArg, StructuredTool
 from typing_extensions import Annotated
 
 from app.generated.schema import IntegrationType
-from app.utils.helper import get_app_dir
+from app.utils.project_helper import get_app_dir
 from app.utils.prompt_manager import PromptManager
 
 dir_path = os.path.dirname(os.path.realpath(__file__))

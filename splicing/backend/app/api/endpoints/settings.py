@@ -10,7 +10,8 @@ from app.generated.schema import (
     SettingsData,
     SettingsSectionType,
 )
-from app.utils.helper import get_app_dir, standardize_name
+from app.utils.helper import standardize_name
+from app.utils.project_helper import get_app_dir
 
 router = APIRouter()
 

@@ -1,10 +1,12 @@
 import logging
+import os
 from collections import defaultdict
 
 import pandas as pd
 from langchain_core.language_models import BaseChatModel
 from langchain_core.messages import BaseMessage
 
+from app.core.config import settings
 from app.generated.schema import (
     LLMType,
     SectionType,
@@ -13,16 +15,14 @@ from app.generated.schema import (
 )
 from app.utils.agent.graph import create_graph
 from app.utils.converse import get_context_update_system_message
-from app.utils.helper import (
-    deserialize_df,
-    get_app_dir,
-    get_llm,
-    serialize_df,
-    standardize_name,
-)
+from app.utils.helper import deserialize_df, get_llm, serialize_df, standardize_name
 from app.utils.redis_client import RedisClient
 
 logger = logging.getLogger(__name__)
+
+
+def get_app_dir() -> str:
+    return os.path.join(settings.SOURCE_DIR, f".{settings.APP_NAME.lower()}")
 
 
 async def get_project_dir(redis_client: RedisClient, project_id: str) -> str:
@@ -136,7 +136,7 @@ async def build_dag(redis_client: RedisClient, project_id: str) -> dict[str, dic
                 generate_result = await redis_client.get_block_data(
                     project_id, section_id, block_id, "generate_result"
                 )
-                section_file_name = (
+                section_file_name = standardize_name(
                     f"{section_type.value.lower()}_{section_metadata['title']}"
                 )
                 if block_setup is not None and generate_result is not None:

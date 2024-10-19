@@ -1,7 +1,6 @@
 import base64
 import io
 import logging
-import os.path
 import random
 import string
 import sys
@@ -13,7 +12,6 @@ from langchain_core.language_models import BaseChatModel
 from langchain_core.messages import AIMessage, BaseMessage, HumanMessage, SystemMessage
 from langchain_openai import ChatOpenAI
 
-from app.core.config import settings
 from app.generated.schema import LLMType
 
 
@@ -67,10 +65,6 @@ def generate_id(length: int = 10) -> str:
     return "".join(
         random.choice(string.digits + string.ascii_lowercase) for _ in range(length)
     )
-
-
-def get_app_dir() -> str:
-    return os.path.join(settings.SOURCE_DIR, f".{settings.APP_NAME.lower()}")
 
 
 def standardize_name(s: str) -> str:
