@@ -25,12 +25,16 @@ langchain-openai = "^0.2.0"
 langchain-anthropic = "^0.2.0"
 langgraph = ">=0.2.20,<0.3"
 dbt-core = "^1.6.0"
+pytest = "^8.3.3"
 
 [tool.poetry.group.dev]
 optional = true
 
 [tool.poetry.group.dev.dependencies]
 pre-commit = "*"
+pytest = "*"
+pytest-asyncio = "*"
+fakeredis = "*"
 mkdocs = "^1.5.0"
 mkdocs-material = "^9.0"
 

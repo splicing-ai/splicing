@@ -25,13 +25,9 @@ from app.utils.agent.checkpointer import AsyncRedisSaver
 from app.utils.agent.graph import create_graph
 from app.utils.converse import get_initial_messages
 from app.utils.execute import get_dbt_packages
-from app.utils.helper import (
-    convert_message_to_dict,
-    generate_id,
-    get_app_dir,
-    standardize_name,
-)
+from app.utils.helper import convert_message_to_dict, generate_id, standardize_name
 from app.utils.project_helper import (
+    get_app_dir,
     get_chat_history,
     get_data_dict_in_block,
     get_llm_for_project,
