@@ -64,6 +64,7 @@ const TransformationSetupForm: React.FC<TransformationSetupFormProps> = ({
   const defaulValues = (blockData.setup ?? {
     source: "",
     tool: "",
+    sourceDetails: "",
     provideRecommendation: true,
   }) as TransformationSetup;
 

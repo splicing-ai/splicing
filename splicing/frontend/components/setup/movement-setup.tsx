@@ -61,7 +61,9 @@ const MovementSetupForm: React.FC<MovementSetupFormProps> = ({ blockData }) => {
   const defaulValues = (blockData.setup ?? {
     tool: "",
     source: "",
+    sourceDetails: "",
     destination: "",
+    destinationDetails: "",
   }) as MovementSetup;
 
   const form = useForm<MovementSetup>({

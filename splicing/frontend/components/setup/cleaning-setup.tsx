@@ -62,6 +62,7 @@ const CleaningSetupForm: React.FC<CleaningSetupFormProps> = ({ blockData }) => {
   const defaulValues = (blockData.setup ?? {
     source: "",
     tool: "",
+    sourceDetails: "",
     provideRecommendation: true,
   }) as CleaningSetup;
 
