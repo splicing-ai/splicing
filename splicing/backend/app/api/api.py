@@ -30,6 +30,7 @@ from app.utils.project_helper import (
     get_app_dir,
     get_chat_history,
     get_data_dict_in_block,
+    get_dbt_project_name,
     get_llm_for_project,
     get_project_dir,
 )
@@ -206,7 +207,9 @@ async def download_code(
                 project_id, section_id, "metadata"
             )
             section_type = SectionType(section_metadata["sectionType"])
-            section_file_name = f"{section_type.value.lower()}_{standardize_name(section_metadata['title'])}"
+            section_file_name = get_dbt_project_name(
+                section_type, section_metadata["title"]
+            )
             is_dbt_project_dir_added = False
             block_ids = await redis_client.get_all_block_ids(project_id, section_id)
             for block_id in block_ids:

@@ -39,6 +39,7 @@ from app.utils.project_helper import (
     context_update,
     get_chat_history,
     get_data_dict_in_block,
+    get_dbt_project_name,
     get_llm_for_project,
     get_project_dir,
     set_data_dict_in_block,
@@ -123,7 +124,7 @@ async def setup(
         )
         working_dir = await get_project_dir(redis_client, project_id)
         profiles_dir = os.path.join(working_dir, "dbt_profiles")
-        project_name = f"{section_type.value.lower()}_{section_metadata['title']}"
+        project_name = get_dbt_project_name(section_type, section_metadata["title"])
         create_dbt_profile(project_name, profiles_dir, integration_type, settings)
     message = await recommend_techniques(
         project_id, section_id, block_id, payload, redis_client
@@ -222,7 +223,7 @@ async def generate_code(
         and TransformationTool(block_setup["tool"]) == TransformationTool.DBT
     ):
         working_dir = await get_project_dir(redis_client, project_id)
-        dbt_project_name = f"{section_type.value.lower()}_{section_metadata['title']}"
+        dbt_project_name = get_dbt_project_name(section_type, section_metadata["title"])
         # we need to initialize a dbt project first because after generation, code can be downloaded
         init_dbt_project(
             dbt_project_name,
@@ -284,7 +285,7 @@ async def execute_code(
             model_name=generate_result.modelName,
             model=generate_result.model,
             properties=generate_result.properties,
-            project_name=f"{section_type.value.lower()}_{section_metadata['title']}",
+            project_name=get_dbt_project_name(section_type, section_metadata["title"]),
             integration_type=IntegrationType(block_setup["source"]),
             working_dir=working_dir,
         )

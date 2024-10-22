@@ -30,6 +30,14 @@ interface DataTableProps {
 
 const DataTable: React.FC<DataTableProps> = ({ data }) => {
   const headers = data.length > 0 ? Object.keys(data[0]) : [];
+
+  const formatCellValue = (value: any): string => {
+    if (typeof value === "boolean") {
+      return value.toString();
+    }
+    return value !== null && value !== undefined ? value : "";
+  };
+
   return (
     <div>
       <Table className="text-xs">
@@ -47,7 +55,7 @@ const DataTable: React.FC<DataTableProps> = ({ data }) => {
             <TableRow key={rowIndex}>
               {headers.map((header) => (
                 <TableCell key={header} className="py-2">
-                  {row[header]}
+                  {formatCellValue(row[header])}
                 </TableCell>
               ))}
             </TableRow>

@@ -25,6 +25,10 @@ def get_app_dir() -> str:
     return os.path.join(settings.SOURCE_DIR, f".{settings.APP_NAME.lower()}")
 
 
+def get_dbt_project_name(section_type: SectionType, section_title: str) -> str:
+    return standardize_name(f"{section_type.value}_{section_title}")
+
+
 async def get_project_dir(redis_client: RedisClient, project_id: str) -> str:
     project_metadata = await redis_client.get_project_data(project_id, "metadata")
     return project_metadata.get("projectDir", get_app_dir())
