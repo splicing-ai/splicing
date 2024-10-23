@@ -12,7 +12,7 @@ from app.generated.schema import (
     TransformationTool,
 )
 from app.utils.agent.graph import create_graph
-from app.utils.converse import get_context_update_system_message
+from app.utils.converse import get_section_update_context_message
 from app.utils.helper import (
     deserialize_df,
     get_app_dir,
@@ -113,10 +113,10 @@ async def context_update(
         block_setup = await redis_client.get_block_data(
             project_id, section_id, block_id, "setup"
         )
-        system_message = get_context_update_system_message(
+        context_message = get_section_update_context_message(
             SectionType(section_metadata["sectionType"]), block_setup
         )
-        await add_chat_messages(redis_client, project_id, system_message)
+        await add_chat_messages(redis_client, project_id, context_message)
 
 
 async def build_dag(redis_client: RedisClient, project_id: str) -> dict[str, dict]:

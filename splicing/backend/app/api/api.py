@@ -181,6 +181,7 @@ async def fetch_project(
         for message in await get_chat_history(redis_client, project_id)
         if not isinstance(message, ToolMessage)
     ]
+    print(f"Debug messages: {messages}")
     last_worked_section_id = await redis_client.get_project_data(
         project_id, "last_worked_section_id"
     )

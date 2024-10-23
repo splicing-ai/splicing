@@ -1,4 +1,5 @@
 import logging
+import functools
 
 from fastapi import APIRouter, Depends
 from langchain_core.messages import AIMessage, HumanMessage
@@ -10,8 +11,8 @@ from app.utils.agent.checkpointer import AsyncRedisSaver
 from app.utils.agent.graph import create_graph
 from app.utils.agent.tools import CODE_GENERATOR_NAME
 from app.utils.converse import (
-    get_execution_error_system_message,
-    get_generate_code_system_message,
+    get_execution_error_context_message,
+    get_generate_code_context_message,
     get_initial_messages,
 )
 from app.utils.helper import convert_message_to_dict
@@ -19,7 +20,13 @@ from app.utils.project_helper import add_chat_messages, get_llm_for_project
 
 router = APIRouter()
 
+print = functools.partial(print, flush=True)
+
 logger = logging.getLogger(__name__)
+logger.setLevel(logging.DEBUG)
+logger.propagate = True
+
+print("converse.py is being loaded")
 
 
 @router.post("/converse/{project_id}")
@@ -28,6 +35,8 @@ async def conversation(
     payload: ConversationPayload,
     redis_client: RedisClient = Depends(get_redis_client),
 ) -> dict[str, str]:
+    logger.debug(f"Payload: {payload}")
+
     section_id = payload.currentSectionId
     block_id = await redis_client.get_section_data(
         project_id, section_id, "current_block_id"
@@ -44,7 +53,7 @@ async def conversation(
             )
             await set_current_block(project_id, section_id, block_id, redis_client)
 
-    system_messages = []
+    context_update_messages = []
     if section_id and block_id:
         # It's possible the value is None, which means this section/block doesn't exist anymore,
         # or the block is not in that session
@@ -55,13 +64,15 @@ async def conversation(
             generate_result = await redis_client.get_block_data(
                 project_id, section_id, block_id, "generate_result"
             )
+            logger.debug(f"generate_result: {generate_result}")
             if block_setup is not None and generate_result is not None:
-                generate_code_system_message = get_generate_code_system_message(
+                generate_code_context_message = get_generate_code_context_message(
                     section_type,
                     tool=block_setup["tool"],
                     **generate_result,
                 )
-                system_messages.append(generate_code_system_message)
+                logger.debug(f"generate_code_context_message: {generate_code_context_message}")
+                context_update_messages.append(generate_code_context_message)
                 await redis_client.set_block_data(
                     project_id,
                     section_id,
@@ -80,10 +91,10 @@ async def conversation(
             if execute_result is not None:
                 error = execute_result.get("error")
                 if error:
-                    execution_error_system_message = get_execution_error_system_message(
+                    execution_error_context_message = get_execution_error_context_message(
                         section_type, error=execute_result["error"]
                     )
-                    system_messages.append(execution_error_system_message)
+                    context_update_messages.append(execution_error_context_message)
                     await redis_client.set_block_data(
                         project_id,
                         section_id,
@@ -103,9 +114,10 @@ async def conversation(
         }
     }
 
-    if system_messages:
+    if context_update_messages:
+        logger.debug(f"context_update_messages: {context_update_messages}")
         await graph.aupdate_state(
-            config, {"messages": system_messages}, as_node="chatbot"
+            config, {"messages": context_update_messages}, as_node="chatbot"
         )
 
     await graph.ainvoke({"messages": [message]}, config)
@@ -132,6 +144,8 @@ async def conversation(
             response = result["messages"][-1]
         logger.debug("CONVERSE - response: %s", response)
         snapshot = await graph.aget_state(config)
+    logger.debug("Graph state: %s", snapshot)
+    print("Conversation function completed")
     return convert_message_to_dict(response)
 
 
