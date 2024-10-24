@@ -26,6 +26,55 @@ class BackendClient {
     return data;
   }
 
+  private async handleStreamResponse(
+    response: Response,
+    onChunk: (chunk: any) => void,
+  ) {
+    const reader = response.body?.getReader();
+    if (!reader) {
+      throw new Error("Response body is not readable");
+    }
+
+    const decoder = new TextDecoder();
+    let buffer = "";
+    const CHUNK_DELIMITER = "\n---\n";
+
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      buffer += decoder.decode(value, { stream: true });
+
+      let delimiterIndex;
+      while ((delimiterIndex = buffer.indexOf(CHUNK_DELIMITER)) !== -1) {
+        const chunk = buffer.substring(0, delimiterIndex);
+        buffer = buffer.substring(delimiterIndex + CHUNK_DELIMITER.length);
+
+        if (chunk.trim()) {
+          try {
+            const parsedChunk = JSON.parse(chunk);
+            if (parsedChunk !== null) {
+              onChunk(parsedChunk);
+            }
+          } catch (e) {
+            console.error("Error parsing chunk:", e);
+          }
+        }
+      }
+    }
+
+    // Process any remaining data in the buffer
+    if (buffer.trim()) {
+      try {
+        const parsedChunk = JSON.parse(buffer);
+        if (parsedChunk !== null) {
+          onChunk(parsedChunk);
+        }
+      } catch (e) {
+        console.error("Error parsing final chunk:", e);
+      }
+    }
+  }
+
   private async get(endpoint: string) {
     const url = `${backendUrl}/${endpoint}`;
     const response = await fetch(url);
@@ -173,14 +222,8 @@ class BackendClient {
     sectionId: string,
     blockId: string,
     setup: BlockSetup,
-  ): Promise<Message | void> {
-    const result = await this.post(
-      `block/setup/${projectId}/${sectionId}/${blockId}`,
-      setup,
-    );
-    if (result) {
-      return result as Message;
-    }
+  ): Promise<void> {
+    await this.post(`block/setup/${projectId}/${sectionId}/${blockId}`, setup);
   }
 
   public async resetBlockSetup(
@@ -218,6 +261,15 @@ class BackendClient {
     blockId: string,
   ): Promise<void> {
     await this.patch(`block/reset/${projectId}/${sectionId}/${blockId}`);
+  }
+
+  public async recommendTechniques(
+    projectId: string,
+    sectionId: string,
+    blockId: string,
+    setup: BlockSetup,
+  ): Promise<void> {
+    await this.post(`block/setup/${projectId}/${sectionId}/${blockId}`, setup);
   }
 
   public async generateCode(
@@ -259,22 +311,6 @@ class BackendClient {
     return result;
   }
 
-  public async converse(
-    projectId: string,
-    message: Message,
-    currentSectionId: string,
-  ): Promise<Message> {
-    const payload = {
-      message: message,
-      currentSectionId: currentSectionId,
-    };
-    const result = (await this.post(
-      `conversation/converse/${projectId}`,
-      payload,
-    )) as Message;
-    return result;
-  }
-
   public async resetConverssation(projectId: string): Promise<Message[]> {
     const result = (await this.patch(
       `conversation/reset/${projectId}`,
@@ -299,6 +335,46 @@ class BackendClient {
     }
 
     return response.blob();
+  }
+
+  public async converseStream(
+    projectId: string,
+    message: Message,
+    currentSectionId: string,
+    onChunk: (chunk: any) => void,
+  ): Promise<void> {
+    const payload = {
+      message: message,
+      currentSectionId: currentSectionId,
+    };
+    const url = `${backendUrl}/conversation/converse/${projectId}`;
+    const response = await fetch(url, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    await this.handleStreamResponse(response, onChunk);
+  }
+
+  public async recommendTechniquesStream(
+    projectId: string,
+    sectionId: string,
+    blockId: string,
+    onChunk: (chunk: any) => void,
+  ): Promise<void> {
+    const url = `${backendUrl}/block/recommend/${projectId}/${sectionId}/${blockId}`;
+    const response = await fetch(url);
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    await this.handleStreamResponse(response, onChunk);
   }
 }
 

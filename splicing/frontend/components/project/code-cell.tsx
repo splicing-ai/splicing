@@ -41,7 +41,7 @@ const CodeEditor: React.FC<CodeEditorProps> = ({ code, setCode, language }) => {
   return (
     <div className="editor-wrapper">
       <Editor
-        value={code}
+        value={code ?? ""}
         onValueChange={(code) => setCode(code)}
         highlight={(code) =>
           highlight(code, languages[language.toLowerCase()], language)

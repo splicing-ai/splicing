@@ -14,6 +14,8 @@ from langchain_openai import ChatOpenAI
 
 from app.generated.schema import LLMType
 
+CHUNK_DELIMITER = "\n---\n"
+
 
 def serialize_df(df: pd.DataFrame) -> str:
     buffer = io.BytesIO()

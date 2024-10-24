@@ -33,6 +33,7 @@ interface ProjectState {
   loadingMessage: string;
   setLoadingMessage: (message: string) => void;
   withLoadingMessage: (message: string, action: () => Promise<any>) => Promise<any>;
+  handleStreamResponse: () => (chunk: any) => void;
 }
 
 const useProjectStore = create<ProjectState>((set, get) => ({
@@ -155,12 +156,12 @@ const useProjectStore = create<ProjectState>((set, get) => ({
     }
   },
   addSetup: async (blockId: string, setup: BlockSetup) => {
-    const { projectId, currentSectionId, getCurrentSection, withLoadingMessage } = get();
+    const { projectId, currentSectionId, getCurrentSection,  handleStreamResponse, withLoadingMessage } = get();
     const currentSection = getCurrentSection();
     if (currentSection) {
-      const response = await withLoadingMessage("I'm saving your setup...", () =>
-        backendClient.setBlockSetup(projectId, currentSectionId, blockId, setup)
-      );
+      await withLoadingMessage("I'm saving your setup...", async () => {
+        await backendClient.setBlockSetup(projectId, currentSectionId, blockId, setup)
+      });
       const updatedBlocks = currentSection.blocks.map((block) =>
         block.id === blockId ? { ...block, setup: setup } : block
       );
@@ -169,11 +170,13 @@ const useProjectStore = create<ProjectState>((set, get) => ({
           section.id === currentSectionId ? { ...section, blocks: updatedBlocks, currentBlockId: blockId } : section
         )
       }));
-      if (response) {
-        set((state) => ({
-          messages: [...state.messages, response]
-        }));
-      }
+
+      await backendClient.recommendTechniquesStream(
+        projectId,
+        currentSectionId,
+        blockId,
+        handleStreamResponse(),
+      );
     }
   },
   resetSetup: async (blockId: string) => {
@@ -248,19 +251,17 @@ const useProjectStore = create<ProjectState>((set, get) => ({
   },
   messages: [],
   addMessage: async (message: Message) => {
-    const { projectId, currentSectionId, fetchProject, withLoadingMessage } = get();
+    const { projectId, currentSectionId, handleStreamResponse } = get();
     set((state) => ({
       messages: [...state.messages, message]
     }));
-    const response = await withLoadingMessage("I'm working on your question...", () =>
-      backendClient.converse(projectId, message, currentSectionId)
+
+    await backendClient.converseStream(
+      projectId,
+      message,
+      currentSectionId,
+      handleStreamResponse(),
     );
-    if (response) {
-      set((state) => ({
-        messages: [...state.messages, response]
-      }));
-      await fetchProject(projectId);
-    }
   },
   resetConversation: async () => {
     const { projectId } = get();
@@ -290,6 +291,45 @@ const useProjectStore = create<ProjectState>((set, get) => ({
     } finally {
       setLoadingMessage("");
     }
+  },
+  handleStreamResponse: () => {
+    let responseMessage: Message | null = null;
+    return (chunk: any) => {
+      const { currentSectionId } = get();
+      if (chunk.type === 'message' || chunk.type === 'recommend') {
+        if (!responseMessage) {
+          responseMessage = {
+            role: 'assistant',
+            content: chunk.data,
+          };
+          set((state) => ({
+            messages: [...state.messages, responseMessage!]
+          }));
+        } else {
+          if (chunk.type === 'message') {
+            responseMessage.content += chunk.data;
+          }
+          else if (chunk.type === 'recommend') {
+            responseMessage.content = chunk.data;
+          }
+          set((state) => ({
+            messages: [...state.messages.slice(0, -1), responseMessage!]
+          }));
+        }
+      } else if (chunk.type === 'generate-result') {
+        const currentSection = get().getCurrentSection();
+        if (currentSection && currentSection.currentBlockId) {
+          const updatedBlocks = currentSection.blocks.map((block) =>
+            block.id === currentSection.currentBlockId ? { ...block, generateResult: JSON.parse(chunk.data) } : block
+          );
+          set((state) => ({
+            sections: state.sections.map((section) =>
+              section.id === currentSectionId ? { ...section, blocks: updatedBlocks } : section
+            )
+          }));
+        }
+      }
+    };
   },
 }));
 
