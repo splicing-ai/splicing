@@ -1,7 +1,10 @@
+import json
+import logging
 import os.path
 
 import pandas as pd
 from fastapi import APIRouter, Depends, Response, status
+from fastapi.responses import StreamingResponse
 from langchain_core.messages import ToolMessage
 
 from app.api.dependencies import RedisClient, get_redis_client
@@ -29,6 +32,7 @@ from app.utils.generate import (
     update_generate_result,
 )
 from app.utils.helper import (
+    CHUNK_DELIMITER,
     convert_message_to_dict,
     format_exception_message,
     generate_id,
@@ -49,6 +53,8 @@ from app.utils.recommend import get_recommend_assistant_message, recommend
 from app.utils.types import BlockSetup, GenerateResult
 
 router = APIRouter()
+
+logger = logging.getLogger(__name__)
 
 
 @router.post("/add/{project_id}/{section_id}")
@@ -106,7 +112,7 @@ async def setup(
     block_id: str,
     payload: BlockSetup,
     redis_client: RedisClient = Depends(get_redis_client),
-) -> dict[str, str] | None:
+) -> Response:
     await redis_client.set_block_data(
         project_id, section_id, block_id, "setup", payload.dict()
     )
@@ -126,16 +132,13 @@ async def setup(
         profiles_dir = os.path.join(working_dir, "dbt_profiles")
         project_name = get_dbt_project_name(section_type, section_metadata["title"])
         create_dbt_profile(project_name, profiles_dir, integration_type, settings)
-    message = await recommend_techniques(
-        project_id, section_id, block_id, payload, redis_client
-    )
     await context_update(
         redis_client, project_id, section_id, block_id, is_block_setup_updated=True
     )
     await redis_client.set_section_data(
         project_id, section_id, "current_block_id", block_id
     )
-    return message
+    return Response(status_code=status.HTTP_204_NO_CONTENT)
 
 
 @router.delete("/reset_setup/{project_id}/{section_id}/{block_id}")
@@ -210,7 +213,7 @@ async def generate_code(
     context = "\n".join(
         f"{message['role']}: {message['content']}" for message in messages
     )
-    result = generate_with_llm(
+    result = await generate_with_llm(
         llm=llm,
         section_type=section_type,
         integration_settings=integration_settings,
@@ -292,7 +295,7 @@ async def execute_code(
     else:
         source_section_id = block_setup["sourceSectionId"]
         source_block_id = block_setup["sourceBlockId"]
-        function_args = generate_result.functionArgs
+        function_args = json.loads(generate_result.functionArgs)
         files_to_copy = ["credentials.yml"]
         if (
             IntegrationType(block_setup["source"]) == IntegrationType.PYTHON
@@ -448,25 +451,24 @@ async def save_code(
     return new_generate_result
 
 
-@router.post("/recommend/{project_id}/{section_id}/{block_id}")
+@router.get("/recommend/{project_id}/{section_id}/{block_id}")
 async def recommend_techniques(
     project_id: str,
     section_id: str,
     block_id: str,
-    payload: BlockSetup,
     redis_client: RedisClient = Depends(get_redis_client),
-) -> dict[str, str] | None:
+) -> StreamingResponse:
     section_metadata = await redis_client.get_section_data(
         project_id, section_id, "metadata"
     )
     section_type = SectionType(section_metadata["sectionType"])
+    block_setup = await redis_client.get_block_data(
+        project_id, section_id, block_id, "setup"
+    )
     data_dict = {}
-    if (
-        section_type in [SectionType.CLEANING, SectionType.TRANSFORMATION]
-        and payload.provideRecommendation
-    ):
-        source_section_id = payload.sourceSectionId
-        source_block_id = payload.sourceBlockId
+    if "provideRecommendation" in block_setup:
+        source_section_id = block_setup["sourceSectionId"]
+        source_block_id = block_setup["sourceBlockId"]
         if source_section_id and source_block_id:
             data_dict = await get_data_dict_in_block(
                 redis_client,
@@ -475,8 +477,8 @@ async def recommend_techniques(
                 source_block_id,
             )
         else:
-            source = payload.source
-            source_details = payload.sourceDetails
+            source = block_setup["source"]
+            source_details = block_setup["sourceDetails"]
             llm = await get_llm_for_project(redis_client, project_id)
             integration_settings = await redis_client.get_settings_data(
                 SettingsSectionType.INTEGRATION.value
@@ -490,17 +492,22 @@ async def recommend_techniques(
             )
     if data_dict:
         llm = await get_llm_for_project(redis_client, project_id)
-        recommendations = recommend(
-            llm=llm, section_type=section_type, data_dict=data_dict
+
+        async def response_generator():
+            response = None
+            async for chunk in await recommend(
+                llm=llm, section_type=section_type, data_dict=data_dict
+            ):
+                if chunk:
+                    message = get_recommend_assistant_message(section_type, chunk)
+                    yield json.dumps(
+                        {"type": "recommend", "data": message.content}
+                    ) + CHUNK_DELIMITER
+                    response = message
+
+            if response:
+                await add_chat_messages(redis_client, project_id, response)
+
+        return StreamingResponse(
+            response_generator(), media_type="application/x-ndjson"
         )
-        if recommendations:
-            await redis_client.set_block_data(
-                project_id,
-                section_id,
-                block_id,
-                "recommendations",
-                recommendations,
-            )
-            message = get_recommend_assistant_message(section_type, recommendations)
-            await add_chat_messages(redis_client, project_id, message)
-            return convert_message_to_dict(message)

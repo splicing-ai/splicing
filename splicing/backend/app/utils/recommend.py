@@ -1,5 +1,6 @@
 import logging
 import os
+from typing import AsyncIterator
 
 import pandas as pd
 from langchain_core.language_models import BaseChatModel
@@ -20,13 +21,13 @@ class RecommendResult(BaseModel):
     recommendations: list[str] | None
 
 
-def recommend(
+async def recommend(
     *,
     llm: BaseChatModel,
     section_type: SectionType,
     data_dict: dict[str, pd.DataFrame],
     **kwargs,
-) -> list[str] | None:
+) -> AsyncIterator[list[str] | None]:
     system_message = prompt_manager.get_prompt(
         "recommend", "system_message", section_type=section_type.value.lower()
     )
@@ -60,9 +61,15 @@ def recommend(
         HumanMessage(content=user_message),
     ]
     structured_llm = llm.with_structured_output(RecommendResult, method="json_mode")
-    response = structured_llm.invoke(messages)
-    logger.debug("RECOMMEND - messages: %s, response: %s", messages, response)
-    return response.recommendations
+
+    async def response_generator():
+        response = None
+        async for chunk in structured_llm.astream(messages):
+            yield chunk.recommendations
+            response = chunk.recommendations
+        logger.debug("RECOMMEND - messages: %s, response: %s", messages, response)
+
+    return response_generator()
 
 
 def get_recommend_assistant_message(

@@ -25,20 +25,47 @@ const Chat = () => {
   ]);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
 
+  const [hasUserSentMessage, setHasUserSentMessage] = useState<boolean>(false);
+  const [streamingContent, setStreamingContent] = useState<string>("");
+
   const handleReset = async () => {
+    setHasUserSentMessage(false);
     await resetConversation();
     setReset(true);
     setTimeout(() => setReset(false), 2000);
   };
 
-  useEffect(() => {
+  const scrollToBottom = () => {
     if (messagesContainerRef.current) {
-      messagesContainerRef.current?.scrollTo({
+      messagesContainerRef.current.scrollTo({
         top: messagesContainerRef.current.scrollHeight,
         behavior: "smooth",
       });
     }
-  }, [messages]);
+  };
+
+  const lastMessage = messages[messages.length - 1];
+  useEffect(() => {
+    if (lastMessage) {
+      if (lastMessage.role === "assistant") {
+        if (hasUserSentMessage) {
+          let index = 0;
+          const interval = setInterval(() => {
+            if (index < lastMessage.content.length) {
+              setStreamingContent(lastMessage.content.slice(0, index + 1));
+              index++;
+              scrollToBottom();
+            }
+          }, 10);
+          return () => clearInterval(interval);
+        } else {
+          scrollToBottom();
+        }
+      } else if (lastMessage.role === "user") {
+        setHasUserSentMessage(true);
+      }
+    }
+  }, [lastMessage, hasUserSentMessage]);
 
   return (
     <div
@@ -122,7 +149,10 @@ const Chat = () => {
                           </Avatar>
                           <div className="bg-secondary/20 dark:bg-secondary/30 p-3 rounded-md max-w-xs space-y-3 border border-secondary/20 dark:border-secondary/40">
                             <ReactMarkdown className="prose dark:prose-invert text-sm leading-relaxed">
-                              {message.content.replace(/\n/gi, "\n &nbsp;")}
+                              {index === messages.length - 1 &&
+                              hasUserSentMessage
+                                ? streamingContent.replace(/\n/gi, "\n &nbsp;")
+                                : message.content.replace(/\n/gi, "\n &nbsp;")}
                             </ReactMarkdown>
                           </div>
                         </>

@@ -20,8 +20,7 @@ components:
         functionName:
           type: string
         functionArgs:
-          type: object
-          additionalProperties: true
+          type: string
         returnValue:
           type: string
         code:

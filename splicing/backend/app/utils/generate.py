@@ -4,6 +4,7 @@ import os
 from typing import Type
 
 import yaml
+from langchain_core.callbacks.manager import adispatch_custom_event
 from langchain_core.language_models import BaseChatModel
 from langchain_core.messages import HumanMessage, SystemMessage
 
@@ -45,7 +46,7 @@ def get_generate_result_type(
         return OrchestrationGenerateResult
 
 
-def generate_with_llm(
+async def generate_with_llm(
     *,
     llm: BaseChatModel,
     section_type: SectionType,
@@ -61,10 +62,14 @@ def generate_with_llm(
         HumanMessage(content=user_message),
     ]
     generate_result_type = get_generate_result_type(section_type, kwargs["tool"])
-    structured_llm = llm.with_structured_output(
-        generate_result_type, method="json_mode"
-    )
-    response = structured_llm.invoke(messages)
+    structured_llm = llm.with_structured_output(generate_result_type)
+
+    # stream the response
+    response = None
+    async for chunk in structured_llm.astream(messages):
+        await adispatch_custom_event("generate-result", chunk)
+        response = chunk
+
     logger.debug("GENERATE CODE - messages: %s, response: %s", messages, response)
     return response
 

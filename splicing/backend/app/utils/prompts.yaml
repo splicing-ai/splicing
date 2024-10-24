@@ -128,9 +128,9 @@ generate:
     ```json
     {
         'functionName': <generated function name>,
-        'code': <generated Python function only, don't include ```python>,
-        'functionArgs': {<arg1>: <value1, if value is None, use `null` here>, ...},
+        'functionArgs': <generated function arguments as a json string from a dictionary, where keys are argument names and values are their respective values. If a value is None, replace it with null. Format: {"arg1": value1, ...}>,
         'returnValue': <brief one-sentence description of return value; if no return value, use `null` here>,
+        'code': <generated Python function only, don't include ```python>,
         'packages': <a list of required Python packages; if no required package, use `null` here>
     }
     ```
@@ -139,9 +139,9 @@ generate:
     ```json
     {
         'functionName': 'load_csv_from_url',
-        'code': 'def load_csv_from_url(url="https://a/b.csv"):\n    import pandas as pd  # import pandas module\n    \n    # Read the CSV file from the provided URL\n    df = pd.read_csv(url)\n    \n    # Return the DataFrame\n    return df',
-        'functionArgs': {'url': 'https://a/b.csv'},
+        'functionArgs': '{"url": "https://a/b.csv"}',
         'returnValue': 'pandas DataFrame containing the data from the CSV file',
+        'code': 'def load_csv_from_url(url="https://a/b.csv"):\n    import pandas as pd  # import pandas module\n    \n    # Read the CSV file from the provided URL\n    df = pd.read_csv(url)\n    \n    # Return the DataFrame\n    return df',
         'packages': ['pandas']
     }
     ```
@@ -151,9 +151,9 @@ generate:
     ```json
     {
         'functionName': 'drop_missing_values',
-        'code': 'def drop_missing_values(df=None):\n    import pandas as pd  # import pandas module\n    \n    # Drop rows with any missing value\n    df = df.dropna(axis=0, how="any")\n    \n    # Return the DataFrame\n    return df',
-        'functionArgs': {'df': null},
+        'functionArgs': '{"df": null}',
         'returnValue': 'pandas DataFrame containing the cleaned data',
+        'code': 'def drop_missing_values(df=None):\n    import pandas as pd  # import pandas module\n    \n    # Drop rows with any missing value\n    df = df.dropna(axis=0, how="any")\n    \n    # Return the DataFrame\n    return df',
         'packages': ['pandas']
     }
     ```
@@ -163,9 +163,9 @@ generate:
     ```json
     {
         'functionName': 'to_datetime_and_calculate_age',
-        'code': 'def to_datetime_and_calculate_age(database="db", schema="public", table="my_table", transformed_table="transformed_table"):\n    import pandas as pd\n    from snowflake.connector import connect\n    from snowflake.connector.pandas_tools import write_pandas\n    import yaml\n\n    # Read Snowflake credentials\n    with open("credentials.yml", "r") as f:\n        creds = yaml.safe_load(f)["snowflake"]\n\n    # Connect to Snowflake\n    conn = connect(\n        account=creds["account"],\n        user=creds["user"],\n        password=creds["password"],\n        warehouse=creds["warehouse"],\n        database=database,\n        schema=schema,\n    )\n\n    # Read data from Snowflake\n    query = f"SELECT * FROM {table}"\n    cur = conn.cursor()\n    df = cur.execute(query).fetch_pandas_all()\n\n    # Perform transformation: Convert date column to datetime and calculate age\n    df[\'BIRTH_DATE\'] = pd.to_datetime(df[\'BIRTH_DATE\'])\n    df[\'AGE\'] = (pd.Timestamp.now() - df[\'BIRTH_DATE\']).astype(\'<timedelta64[Y]\')\n\n    # Write transformed data back to Snowflake\n    write_pandas(conn, df, transformed_table)\n\n    # Close the connection\n    cur.close()\n    conn.close()\n\n    return f"Data from {table} has been transformed and written to {transformed_table}"',
-        'functionArgs': {'database': 'db', 'schema': 'public', 'table': 'my_table', transformed_table: "transformed_table"},
+        'functionArgs': '{"database": "db", "schema": "public", "table": "my_table", "transformed_table": "transformed_table"}',
         'returnValue': 'A message confirming the data transformation and writing process',
+        'code': 'def to_datetime_and_calculate_age(database="db", schema="public", table="my_table", transformed_table="transformed_table"):\n    import pandas as pd\n    from snowflake.connector import connect\n    from snowflake.connector.pandas_tools import write_pandas\n    import yaml\n\n    # Read Snowflake credentials\n    with open("credentials.yml", "r") as f:\n        creds = yaml.safe_load(f)["snowflake"]\n\n    # Connect to Snowflake\n    conn = connect(\n        account=creds["account"],\n        user=creds["user"],\n        password=creds["password"],\n        warehouse=creds["warehouse"],\n        database=database,\n        schema=schema,\n    )\n\n    # Read data from Snowflake\n    query = f"SELECT * FROM {table}"\n    cur = conn.cursor()\n    df = cur.execute(query).fetch_pandas_all()\n\n    # Perform transformation: Convert date column to datetime and calculate age\n    df[\'BIRTH_DATE\'] = pd.to_datetime(df[\'BIRTH_DATE\'])\n    df[\'AGE\'] = (pd.Timestamp.now() - df[\'BIRTH_DATE\']).astype(\'<timedelta64[Y]\')\n\n    # Write transformed data back to Snowflake\n    write_pandas(conn, df, transformed_table)\n\n    # Close the connection\n    cur.close()\n    conn.close()\n\n    return f"Data from {table} has been transformed and written to {transformed_table}"',
         'packages': ['pandas', 'snowflake-connector-python', 'pyyaml']
     }
     ```
