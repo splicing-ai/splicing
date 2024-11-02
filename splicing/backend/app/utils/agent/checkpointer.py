@@ -84,13 +84,13 @@ def _filter_keys(
         keys = [
             k
             for k in keys
-            if _parse_redis_checkpoint_key(k)["checkpoint_id"]
+            if _parse_redis_checkpoint_key(k.decode())["checkpoint_id"]
             < before["configurable"]["checkpoint_id"]
         ]
 
     keys = sorted(
         keys,
-        key=lambda k: _parse_redis_checkpoint_key(k)["checkpoint_id"],
+        key=lambda k: _parse_redis_checkpoint_key(k.decode())["checkpoint_id"],
         reverse=True,
     )
     if limit:
@@ -116,8 +116,8 @@ def _load_writes(
     writes = [
         (
             task_id,
-            data["channel"],
-            serde.loads_typed((data["type"], data["value"])),
+            data[b"channel"].decode(),
+            serde.loads_typed((data[b"type"].decode(), data[b"value"])),
         )
         for (task_id, _), data in task_id_to_data.items()
     ]
@@ -146,9 +146,9 @@ def _parse_redis_checkpoint_data(
         }
     }
 
-    checkpoint = serde.loads_typed((data["type"], data["checkpoint"].encode("latin-1")))
-    metadata = serde.loads(data["metadata"])
-    parent_checkpoint_id = data.get("parent_checkpoint_id", "")
+    checkpoint = serde.loads_typed((data[b"type"].decode(), data[b"checkpoint"]))
+    metadata = serde.loads(data[b"metadata"].decode())
+    parent_checkpoint_id = data.get(b"parent_checkpoint_id", b"").decode()
     parent_config = (
         {
             "configurable": {
@@ -208,11 +208,7 @@ class AsyncRedisSaver(BaseCheckpointSaver):
         type_, serialized_checkpoint = self.serde.dumps_typed(checkpoint)
         serialized_metadata = self.serde.dumps(metadata)
         data = {
-            # after msgpack change in langgraph-checkpoint,
-            # https://github.com/langchain-ai/langgraph/commit/3b05279e321f41b209bbd4bedc75434a2bea1c63
-            # when need to decode it to string first as we set decode_responses=True
-            # then encode it to bytes when after retrieving it
-            "checkpoint": serialized_checkpoint.decode("latin-1"),
+            "checkpoint": serialized_checkpoint,
             "type": type_,
             "checkpoint_id": checkpoint_id,
             "metadata": serialized_metadata,
@@ -290,7 +286,9 @@ class AsyncRedisSaver(BaseCheckpointSaver):
             thread_id, checkpoint_ns, checkpoint_id, "*", None
         )
         matching_keys = await self.conn.keys(pattern=writes_key)
-        parsed_keys = [_parse_redis_checkpoint_writes_key(key) for key in matching_keys]
+        parsed_keys = [
+            _parse_redis_checkpoint_writes_key(key.decode()) for key in matching_keys
+        ]
         pending_writes = _load_writes(
             self.serde,
             {
@@ -333,8 +331,8 @@ class AsyncRedisSaver(BaseCheckpointSaver):
         keys = _filter_keys(await self.conn.keys(pattern), before, limit)
         for key in keys:
             data = await self.conn.hgetall(key)
-            if data and "checkpoint" in data and "metadata" in data:
-                yield _parse_redis_checkpoint_data(self.serde, key, data)
+            if data and b"checkpoint" in data and b"metadata" in data:
+                yield _parse_redis_checkpoint_data(self.serde, key.decode(), data)
 
     async def _aget_checkpoint_key(
         self, thread_id: str, checkpoint_ns: str, checkpoint_id: Optional[str]
@@ -351,9 +349,9 @@ class AsyncRedisSaver(BaseCheckpointSaver):
 
         latest_key = max(
             all_keys,
-            key=lambda k: _parse_redis_checkpoint_key(k)["checkpoint_id"],
+            key=lambda k: _parse_redis_checkpoint_key(k.decode())["checkpoint_id"],
         )
-        return latest_key
+        return latest_key.decode()
 
     async def adelete_checkpoint(self, thread_id: str) -> None:
         key_patterns = [
@@ -363,4 +361,4 @@ class AsyncRedisSaver(BaseCheckpointSaver):
         for pattern in key_patterns:
             all_keys = await self.conn.keys(pattern)
             for key in all_keys:
-                await self.conn.delete(key)
+                await self.conn.delete(key.decode())

@@ -156,7 +156,10 @@ const MovementSetupForm: React.FC<MovementSetupFormProps> = ({ blockData }) => {
             <FormItem>
               <FormLabel>Source Section</FormLabel>
               <FormDescription>Optional</FormDescription>
-              <Select onValueChange={field.onChange} value={field.value}>
+              <Select
+                onValueChange={field.onChange}
+                value={field.value ?? undefined}
+              >
                 <FormControl>
                   <SelectTrigger className="text-left">
                     <SelectValue placeholder="Select a source section" />
@@ -181,7 +184,10 @@ const MovementSetupForm: React.FC<MovementSetupFormProps> = ({ blockData }) => {
             <FormItem>
               <FormLabel>Source Block</FormLabel>
               <FormDescription>Optional</FormDescription>
-              <Select onValueChange={field.onChange} value={field.value}>
+              <Select
+                onValueChange={field.onChange}
+                value={field.value ?? undefined}
+              >
                 <FormControl>
                   <SelectTrigger className="text-left">
                     <SelectValue placeholder="Select a source block" />

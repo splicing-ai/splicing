@@ -166,7 +166,10 @@ const TransformationSetupForm: React.FC<TransformationSetupFormProps> = ({
             <FormItem>
               <FormLabel>Source Section</FormLabel>
               <FormDescription>Optional</FormDescription>
-              <Select onValueChange={field.onChange} value={field.value}>
+              <Select
+                onValueChange={field.onChange}
+                value={field.value ?? undefined}
+              >
                 <FormControl>
                   <SelectTrigger className="text-left">
                     <SelectValue placeholder="Select a source section" />
@@ -191,7 +194,10 @@ const TransformationSetupForm: React.FC<TransformationSetupFormProps> = ({
             <FormItem>
               <FormLabel>Source Block</FormLabel>
               <FormDescription>Optional</FormDescription>
-              <Select onValueChange={field.onChange} value={field.value}>
+              <Select
+                onValueChange={field.onChange}
+                value={field.value ?? undefined}
+              >
                 <FormControl>
                   <SelectTrigger className="text-left">
                     <SelectValue placeholder="Select a source block" />

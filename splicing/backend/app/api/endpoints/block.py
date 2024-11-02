@@ -158,6 +158,7 @@ async def generate_code(
     section_id: str,
     block_id: str,
     redis_client: RedisClient = Depends(get_redis_client),
+    called_from_agent: bool = False,
 ) -> GenerateResult:
     integration_settings = await redis_client.get_settings_data(
         SettingsSectionType.INTEGRATION.value
@@ -217,6 +218,7 @@ async def generate_code(
         llm=llm,
         section_type=section_type,
         integration_settings=integration_settings,
+        called_from_agent=called_from_agent,
         context=context,
         **kwargs,
     )
