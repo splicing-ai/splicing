@@ -43,7 +43,7 @@ class CodeGenerator(BaseTool):
         section_id = config["configurable"]["section_id"]
         block_id = config["configurable"]["block_id"]
         result = await generate_code(
-            project_id, section_id, block_id, self.redis_client
+            project_id, section_id, block_id, self.redis_client, called_from_agent=True
         )
         return result
 

@@ -51,6 +51,7 @@ async def generate_with_llm(
     llm: BaseChatModel,
     section_type: SectionType,
     integration_settings: dict,
+    called_from_agent: bool = False,
     **kwargs,
 ) -> GenerateResult:
     system_message = prompt_manager.get_prompt(
@@ -67,7 +68,8 @@ async def generate_with_llm(
     # stream the response
     response = None
     async for chunk in structured_llm.astream(messages):
-        await adispatch_custom_event("generate-result", chunk)
+        if called_from_agent:
+            await adispatch_custom_event("generate-result", chunk)
         response = chunk
 
     logger.debug("GENERATE CODE - messages: %s, response: %s", messages, response)

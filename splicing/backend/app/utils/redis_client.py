@@ -30,7 +30,7 @@ class RedisClient:
     async def _get(self, key: str) -> Any:
         result = await self.redis.get(key)
         if result:
-            return json.loads(result)
+            return json.loads(result.decode())
         else:
             return None
 
@@ -47,7 +47,7 @@ class RedisClient:
 
     async def _get_set_data(self, key: str) -> set:
         result = await self.redis.smembers(key)
-        return {json.loads(e) for e in result}
+        return {json.loads(e.decode()) for e in result}
 
     async def _append_list_data(self, key: str, *values: Any) -> None:
         # will create a list if it doesn't exist
@@ -57,7 +57,7 @@ class RedisClient:
 
     async def _get_list_data(self, key: str) -> list:
         result = await self.redis.lrange(key, 0, -1)
-        return [json.loads(e) for e in result]
+        return [json.loads(e.decode()) for e in result]
 
     async def _delete_list_data(self, key: str, value: Any) -> None:
         # remove the first occurrence
@@ -111,7 +111,7 @@ class RedisClient:
 
     async def delete_all_project_data(self, project_id: str) -> None:
         async for key in self.redis.scan_iter(f"{project_id}:*"):
-            await self._delete(key)
+            await self._delete(key.decode())
 
     async def get_settings_data(
         self, section_type: str, key: str | None = None
@@ -122,6 +122,7 @@ class RedisClient:
         else:
             result = {}
             async for key in self.redis.scan_iter(f"settings:{section_type}:*"):
+                key = key.decode()
                 _, _, key_name = key.split(":")
                 value = await self._get(key)
                 result[key_name] = value
@@ -130,6 +131,7 @@ class RedisClient:
     async def get_all_settings_data(self) -> list:
         result = []
         async for key in self.redis.scan_iter("settings:*"):
+            key = key.decode()
             _, section_type, key_name = key.split(":")
             value = await self._get(key)
             result.append(
@@ -210,7 +212,7 @@ class RedisClient:
         async for key in self.redis.scan_iter(
             f"{project_id}:section:{section_id}:block:{block_id}:*"
         ):
-            await self._delete(key)
+            await self._delete(key.decode())
 
     async def add_block_id(
         self, project_id: str, section_id: str, block_id: str

@@ -15,8 +15,10 @@ components:
           minLength: 1
         sourceSectionId:
           type: string
+          nullable: true
         sourceBlockId:
           type: string
+          nullable: true
         sourceDetails:
           type: string
         provideRecommendation:
@@ -48,8 +50,10 @@ components:
           minLength: 1
         sourceSectionId:
           type: string
+          nullable: true
         sourceBlockId:
           type: string
+          nullable: true
         sourceDetails:
           type: string
         provideRecommendation:
@@ -73,8 +77,10 @@ components:
           minLength: 1
         sourceSectionId:
           type: string
+          nullable: true
         sourceBlockId:
           type: string
+          nullable: true
         sourceDetails:
           type: string
         provideRecommendation:
