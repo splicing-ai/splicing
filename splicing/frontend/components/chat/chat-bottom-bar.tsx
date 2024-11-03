@@ -7,6 +7,7 @@ import useProjectStore from "@/store/project";
 
 const ChatBottomBar = () => {
   const [message, setMessage] = useState<string>("");
+  const [isStreamingMessage, setIsStreamingMessage] = useState(false);
   const [addMessage, loadingMessage] = useProjectStore((state) => [
     state.addMessage,
     state.loadingMessage,
@@ -18,13 +19,18 @@ const ChatBottomBar = () => {
   };
 
   const handleSend = async () => {
-    if (message.trim()) {
+    if (message.trim() && !isStreamingMessage) {
       const newMessage = {
         role: "user",
         content: message.trim(),
       };
       setMessage("");
-      await addMessage(newMessage);
+      setIsStreamingMessage(true);
+      try {
+        await addMessage(newMessage);
+      } finally {
+        setIsStreamingMessage(false);
+      }
 
       if (inputRef.current) {
         inputRef.current.focus();
@@ -92,7 +98,8 @@ const ChatBottomBar = () => {
           <Button
             variant="ghost"
             size="icon"
-            className="flex items-center justify-center rounded-lg text-muted-foreground transition-colors hover:text-foreground"
+            disabled={isStreamingMessage}
+            className="flex items-center justify-center rounded-lg text-muted-foreground transition-colors hover:text-foreground disabled:opacity-50"
             onClick={handleSend}
           >
             <SendHorizontal className="h-5 w-5" />

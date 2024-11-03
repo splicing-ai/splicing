@@ -313,12 +313,12 @@ const useProjectStore = create<ProjectState>((set, get) => ({
             responseMessage.content = chunk.data;
           }
           set((state) => ({
-            messages: [...state.messages.slice(0, -1), responseMessage!]
+            messages: [...state.messages.slice(0, -1), { ...responseMessage! }]
           }));
         }
       } else if (chunk.type === 'generate-result') {
         const currentSection = get().getCurrentSection();
-        if (currentSection && currentSection.currentBlockId) {
+        if (currentSection?.currentBlockId) {
           const updatedBlocks = currentSection.blocks.map((block) =>
             block.id === currentSection.currentBlockId ? { ...block, generateResult: JSON.parse(chunk.data) } : block
           );

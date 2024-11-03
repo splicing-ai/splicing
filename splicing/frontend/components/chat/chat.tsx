@@ -37,10 +37,8 @@ const Chat = () => {
 
   const scrollToBottom = () => {
     if (messagesContainerRef.current) {
-      messagesContainerRef.current.scrollTo({
-        top: messagesContainerRef.current.scrollHeight,
-        behavior: "smooth",
-      });
+      messagesContainerRef.current.scrollTop =
+        messagesContainerRef.current.scrollHeight;
     }
   };
 
@@ -63,45 +61,47 @@ const Chat = () => {
         }
       } else if (lastMessage.role === "user") {
         setHasUserSentMessage(true);
+        scrollToBottom();
       }
     }
   }, [lastMessage, hasUserSentMessage]);
 
   return (
-    <div
-      className="w-full h-full max-h-full border rounded-lg overflow-y-auto overflow-x-hidden justify-between gap-4 flex flex-col"
-      ref={messagesContainerRef}
-    >
-      <div className="flex flex-col justify-start">
-        <header className="h-10 flex flex-col p-4">
-          <div className="flex justify-between items-center">
-            <h3 className="text-xl font-medium leading-none tracking-tight">
-              Assistant
-            </h3>
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button
-                    className="rounded-full w-6 h-6"
-                    size="icon"
-                    variant="ghost"
-                    onClick={handleReset}
-                  >
-                    {reset ? (
-                      <Check className="h-4 w-4" />
-                    ) : (
-                      <RotateCcw className="h-4 w-4" />
-                    )}
-                    <span className="sr-only">Reset</span>
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent side="top">Reset</TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
-          </div>
-          <Separator className="my-4" />
-        </header>
-        <div className="w-full overflow-y-auto overflow-x-hidden flex flex-col mt-4">
+    <div className="w-full h-full flex flex-col border rounded-lg">
+      <header className="flex-none h-10 p-4 z-10 relative">
+        <div className="flex justify-between items-center">
+          <h3 className="text-xl font-medium leading-none tracking-tight">
+            Assistant
+          </h3>
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  className="rounded-full w-6 h-6"
+                  size="icon"
+                  variant="ghost"
+                  onClick={handleReset}
+                >
+                  {reset ? (
+                    <Check className="h-4 w-4" />
+                  ) : (
+                    <RotateCcw className="h-4 w-4" />
+                  )}
+                  <span className="sr-only">Reset</span>
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent side="top">Reset</TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+        </div>
+        <Separator className="my-4" />
+      </header>
+
+      <div
+        ref={messagesContainerRef}
+        className="flex-1 overflow-y-auto min-h-0 scroll-smooth mt-4"
+      >
+        <div className="w-full flex flex-col">
           <AnimatePresence>
             {messages?.map(
               (message, index) =>
@@ -164,7 +164,8 @@ const Chat = () => {
           </AnimatePresence>
         </div>
       </div>
-      <footer>
+
+      <footer className="flex-none bg-background">
         <ChatBottomBar />
       </footer>
     </div>

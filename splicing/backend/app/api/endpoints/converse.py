@@ -165,8 +165,11 @@ async def conversation(
                     if chunk:
                         yield json.dumps(chunk) + CHUNK_DELIMITER
 
-        snapshot = await graph.aget_state(config)
-        logger.debug("CONVERSE - response: %s", snapshot.values["messages"][-1])
+                # get the new snapshot
+                snapshot = await graph.aget_state(config)
+                response = snapshot.values["messages"][-1]
+
+            logger.debug("CONVERSE - response: %s", response)
 
     return StreamingResponse(event_generator(), media_type="application/x-ndjson")
 

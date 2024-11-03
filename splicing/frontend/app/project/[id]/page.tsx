@@ -47,7 +47,7 @@ export default function ProjectPage({ params }: { params: { id: string } }) {
     <div className="flex h-screen w-full flex-col">
       <Siderbar />
       <Header />
-      <div className="flex flex-col pl-40 pt-14 fixed inset-0">
+      <div className="flex flex-col pl-40 pt-12 fixed inset-0">
         <main className="flex items-start gap-4 p-4 h-[calc(100vh-56px)] max-h-[calc(100vh-56px)]">
           <div className="w-full h-full">
             <ResizablePanelGroup direction="horizontal" className="h-full">
