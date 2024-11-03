@@ -73,6 +73,9 @@ class BackendClient {
         console.error("Error parsing final chunk:", e);
       }
     }
+
+    // End of stream
+    onChunk(null);
   }
 
   private async get(endpoint: string) {

@@ -1,7 +1,5 @@
 import { create } from 'zustand';
-import { SectionData, SectionType, BlockSetup } from '@/components/types/schema-types';
-import { ProjectMetadata } from '@/components/types/schema-types';
-import { Message } from '@/components/types/schema-types';
+import { SectionData, SectionType, BlockSetup, ProjectMetadata, GenerateResult, Message } from '@/components/types/schema-types';
 import { backendClient } from '@/lib/backend';
 
 interface ProjectState {
@@ -294,33 +292,57 @@ const useProjectStore = create<ProjectState>((set, get) => ({
   },
   handleStreamResponse: () => {
     let responseMessage: Message | null = null;
-    return (chunk: any) => {
-      const { currentSectionId } = get();
-      if (chunk.type === 'message' || chunk.type === 'recommend') {
+    // use a buffer to store the chunks and flush them when the buffer is full
+    // to ensure smooth streaming
+    let bufferedChunks: any[] = [];
+    const BATCH_SIZE = 10;
+
+    const flushBuffer = () => {
+      if (bufferedChunks.length === 0) return;
+
+      let aggregatedMessageContent = '';
+      let hasRecommend = false;
+      let recommendContent = '';
+      let generateResult: GenerateResult | undefined = undefined;
+
+      bufferedChunks.forEach((chunk) => {
+        if (chunk.type === 'message') {
+          aggregatedMessageContent += chunk.data;
+        } else if (chunk.type === 'recommend') {
+          hasRecommend = true;
+          recommendContent = chunk.data;
+        } else if (chunk.type === 'generate-result') {
+          generateResult = JSON.parse(chunk.data);
+        }
+      });
+
+      if (aggregatedMessageContent || hasRecommend) {
         if (!responseMessage) {
           responseMessage = {
             role: 'assistant',
-            content: chunk.data,
+            content: hasRecommend ? recommendContent : aggregatedMessageContent,
           };
           set((state) => ({
             messages: [...state.messages, responseMessage!]
           }));
         } else {
-          if (chunk.type === 'message') {
-            responseMessage.content += chunk.data;
-          }
-          else if (chunk.type === 'recommend') {
-            responseMessage.content = chunk.data;
-          }
+          responseMessage.content = hasRecommend
+            ? recommendContent
+            : responseMessage.content + aggregatedMessageContent;
           set((state) => ({
             messages: [...state.messages.slice(0, -1), { ...responseMessage! }]
           }));
         }
-      } else if (chunk.type === 'generate-result') {
-        const currentSection = get().getCurrentSection();
+      }
+
+      if (generateResult) {
+        const { currentSectionId, getCurrentSection } = get();
+        const currentSection = getCurrentSection();
         if (currentSection?.currentBlockId) {
           const updatedBlocks = currentSection.blocks.map((block) =>
-            block.id === currentSection.currentBlockId ? { ...block, generateResult: JSON.parse(chunk.data) } : block
+            block.id === currentSection.currentBlockId
+              ? { ...block, generateResult: generateResult }
+              : block
           );
           set((state) => ({
             sections: state.sections.map((section) =>
@@ -328,6 +350,18 @@ const useProjectStore = create<ProjectState>((set, get) => ({
             )
           }));
         }
+      }
+
+      bufferedChunks = [];
+    };
+
+    return (chunk: any) => {
+      if (chunk !== null) {
+        bufferedChunks.push(chunk);
+      }
+
+      if (bufferedChunks.length >= BATCH_SIZE || chunk === null) {
+        flushBuffer();
       }
     };
   },
