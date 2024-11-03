@@ -160,7 +160,7 @@ async def conversation(
                     ):
                         chunk = {
                             "type": "generate-result",
-                            "data": event["data"].json(),
+                            "data": json.dumps(event["data"]),
                         }
                     if chunk:
                         yield json.dumps(chunk) + CHUNK_DELIMITER

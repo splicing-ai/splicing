@@ -62,18 +62,26 @@ async def generate_with_llm(
         SystemMessage(content=system_message),
         HumanMessage(content=user_message),
     ]
-    generate_result_type = get_generate_result_type(section_type, kwargs["tool"])
-    structured_llm = llm.with_structured_output(generate_result_type)
 
-    # stream the response
-    response = None
-    async for chunk in structured_llm.astream(messages):
-        if called_from_agent:
-            await adispatch_custom_event("generate-result", chunk)
-        response = chunk
+    try:
+        generate_result_type = get_generate_result_type(section_type, kwargs["tool"])
+        # Using pydantic model will cause langchain to only start output in streaming
+        # when all required fields are generated, so convert to use json schema (dict)
+        structured_llm = llm.with_structured_output(
+            generate_result_type.model_json_schema()
+        )
 
-    logger.debug("GENERATE CODE - messages: %s, response: %s", messages, response)
-    return response
+        # stream the response
+        response = None
+        async for chunk in structured_llm.astream(messages):
+            if called_from_agent:
+                await adispatch_custom_event("generate-result", chunk)
+            response = chunk
+
+        logger.debug("GENERATE CODE - messages: %s, response: %s", messages, response)
+        return generate_result_type(**response)
+    except Exception as ex:
+        logger.error("GENERATE CODE - exception: %s", ex)
 
 
 def build_user_message(

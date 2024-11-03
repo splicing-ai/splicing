@@ -22,6 +22,7 @@ def main():
             "--use-standard-collections",
             "--collapse-root-models",
             "--use-double-quotes",
+            "--use-schema-description",
         ]
     )
 

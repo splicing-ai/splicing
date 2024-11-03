@@ -34,14 +34,17 @@ components:
     MovementGenerateResult:
       allOf:
         - $ref: '#/components/schemas/PythonGenerateResult'
+      description: "Code generation result for data movement tasks"
 
     CleaningGenerateResult:
       allOf:
         - $ref: '#/components/schemas/PythonGenerateResult'
+      description: "Code generation result for data cleaning tasks"
 
     TransformationPythonGenerateResult:
       allOf:
         - $ref: '#/components/schemas/PythonGenerateResult'
+      description: "Code generation result for data transformation tasks using Python"
 
     TransformationDbtGenerateResult:
       type: object
@@ -56,6 +59,7 @@ components:
           type: string
         properties:
           type: string
+      description: "Code generation result for data transformation tasks using dbt"
 
     OrchestrationGenerateResult:
       type: object
@@ -67,6 +71,7 @@ components:
           type: string
         code:
           type: string
+      description: "Code generation result for data orchestration tasks"
 
     TransformationGenerateResult:
       oneOf:

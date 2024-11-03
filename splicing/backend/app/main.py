@@ -6,6 +6,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
 from app.api.api import router
+from app.utils.helper import setup_logging
 
 logger = logging.getLogger(__name__)
 
@@ -19,6 +20,9 @@ app.add_middleware(
     allow_headers=["*"],
 )
 app.include_router(router)
+
+# change to your preferred level
+setup_logging(logging.DEBUG)
 
 
 @app.exception_handler(RequestValidationError)

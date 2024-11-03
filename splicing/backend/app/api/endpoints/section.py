@@ -68,12 +68,12 @@ async def rename(
     dbt_project_dir = os.path.join(project_dir, curr_dbt_project_name)
     if os.path.exists(dbt_project_dir):
         shutil.rmtree(dbt_project_dir)
-    profiles_dir = os.path.join(project_dir, "dbt_profiles")
-    new_dbt_project_name = (
-        f"{metadata['sectionType'].lower()}_{standardize_name(new_title)}"
-    )
-    rename_dbt_profile(curr_dbt_project_name, profiles_dir, new_dbt_project_name)
-    init_dbt_project(new_dbt_project_name, project_dir)
+        profiles_dir = os.path.join(project_dir, "dbt_profiles")
+        new_dbt_project_name = (
+            f"{metadata['sectionType'].lower()}_{standardize_name(new_title)}"
+        )
+        rename_dbt_profile(curr_dbt_project_name, profiles_dir, new_dbt_project_name)
+        init_dbt_project(new_dbt_project_name, project_dir)
 
     metadata["title"] = new_title
     await redis_client.set_section_data(project_id, section_id, "metadata", metadata)
