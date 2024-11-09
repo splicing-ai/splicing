@@ -1,6 +1,8 @@
 from typing import TYPE_CHECKING, Annotated
 
+from langchain_anthropic import ChatAnthropic
 from langchain_core.language_models import BaseChatModel
+from langchain_openai import ChatOpenAI
 from langgraph.graph import START, StateGraph
 from langgraph.graph.graph import CompiledGraph
 from langgraph.graph.message import add_messages
@@ -26,8 +28,14 @@ def create_graph(
 ) -> CompiledGraph:
     graph_builder = StateGraph(State)
     if section_type:
+        kwargs = {}
+        if isinstance(llm, ChatOpenAI):
+            kwargs["parallel_tool_calls"] = False
+        elif isinstance(llm, ChatAnthropic):
+            kwargs["tool_choice"] = {"type": "auto", "disable_parallel_tool_use": True}
+
         tools = create_tools(redis_client, section_type)
-        llm_with_tools = llm.bind_tools(tools, parallel_tool_calls=False)
+        llm_with_tools = llm.bind_tools(tools, **kwargs)
 
         def chatbot(state: State):
             return {"messages": [llm_with_tools.invoke(state["messages"])]}

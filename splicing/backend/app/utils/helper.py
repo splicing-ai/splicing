@@ -53,14 +53,22 @@ def get_llm(llm_type: LLMType, llm_settings: dict) -> BaseChatModel:
 
 
 def convert_message_to_dict(message: BaseMessage) -> dict[str, str]:
+    content = merge_if_anthropic_content_blocks(message.content)
     if isinstance(message, HumanMessage):
-        return {"role": "user", "content": message.content}
+        return {"role": "user", "content": content}
     elif isinstance(message, AIMessage):
-        return {"role": "assistant", "content": message.content}
+        return {"role": "assistant", "content": content}
     elif isinstance(message, SystemMessage):
-        return {"role": "system", "content": message.content}
+        return {"role": "system", "content": content}
     else:
         raise ValueError(f"Unsupported message type: {type(message)}")
+
+
+def merge_if_anthropic_content_blocks(content: str | list[dict]) -> str:
+    if isinstance(content, list):
+        return "\n".join(block["text"] for block in content if "text" in block)
+    else:
+        return content
 
 
 def generate_id(length: int = 10) -> str:

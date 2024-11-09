@@ -12,11 +12,15 @@ from app.utils.agent.checkpointer import AsyncRedisSaver
 from app.utils.agent.graph import create_graph
 from app.utils.agent.tools import CODE_GENERATOR_NAME
 from app.utils.converse import (
-    get_execution_error_system_message,
+    get_execution_error_user_message,
     get_generate_code_system_message,
     get_initial_messages,
 )
-from app.utils.helper import CHUNK_DELIMITER, convert_message_to_dict
+from app.utils.helper import (
+    CHUNK_DELIMITER,
+    convert_message_to_dict,
+    merge_if_anthropic_content_blocks,
+)
 from app.utils.project_helper import add_chat_messages, get_llm_for_project
 
 router = APIRouter()
@@ -46,7 +50,7 @@ async def conversation(
             )
             await set_current_block(project_id, section_id, block_id, redis_client)
 
-    system_messages = []
+    hidden_user_messages = []
     if section_id and block_id:
         # It's possible the value is None, which means this section/block doesn't exist anymore,
         # or the block is not in that session
@@ -63,7 +67,7 @@ async def conversation(
                     tool=block_setup["tool"],
                     **generate_result,
                 )
-                system_messages.append(generate_code_system_message)
+                hidden_user_messages.append(generate_code_system_message)
                 await redis_client.set_block_data(
                     project_id,
                     section_id,
@@ -82,10 +86,10 @@ async def conversation(
             if execute_result is not None:
                 error = execute_result.get("error")
                 if error:
-                    execution_error_system_message = get_execution_error_system_message(
+                    execution_error_user_message = get_execution_error_user_message(
                         section_type, error=execute_result["error"]
                     )
-                    system_messages.append(execution_error_system_message)
+                    hidden_user_messages.append(execution_error_user_message)
                     await redis_client.set_block_data(
                         project_id,
                         section_id,
@@ -105,9 +109,9 @@ async def conversation(
         }
     }
 
-    if system_messages:
+    if hidden_user_messages:
         await graph.aupdate_state(
-            config, {"messages": system_messages}, as_node="chatbot"
+            config, {"messages": hidden_user_messages}, as_node="chatbot"
         )
 
     async def event_generator():
@@ -116,7 +120,10 @@ async def conversation(
         ):
             if msg.content and metadata["langgraph_node"] == "chatbot":
                 yield json.dumps(
-                    {"type": "message", "data": msg.content}
+                    {
+                        "type": "message",
+                        "data": merge_if_anthropic_content_blocks(msg.content),
+                    }
                 ) + CHUNK_DELIMITER
 
         snapshot = await graph.aget_state(config)
@@ -152,7 +159,9 @@ async def conversation(
                     ):
                         chunk = {
                             "type": "message",
-                            "data": event["data"]["chunk"].content,
+                            "data": merge_if_anthropic_content_blocks(
+                                event["data"]["chunk"].content
+                            ),
                         }
                     elif (
                         event["event"] == "on_custom_event"
