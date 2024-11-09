@@ -18,6 +18,10 @@ logger = logging.getLogger(__name__)
 
 
 class RecommendResult(BaseModel):
+    """
+    Recommendation results for data engineering tasks.
+    """
+
     recommendations: list[str] | None
 
 
@@ -60,13 +64,15 @@ async def recommend(
         SystemMessage(content=system_message),
         HumanMessage(content=user_message),
     ]
-    structured_llm = llm.with_structured_output(RecommendResult, method="json_mode")
+    structured_llm = llm.with_structured_output(RecommendResult.model_json_schema())
 
     async def response_generator():
         response = None
         async for chunk in structured_llm.astream(messages):
-            yield chunk.recommendations
-            response = chunk.recommendations
+            recommendations = chunk.get("recommendations")
+            if recommendations:
+                yield recommendations
+                response = recommendations
         logger.debug("RECOMMEND - messages: %s, response: %s", messages, response)
 
     return response_generator()

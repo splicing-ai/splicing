@@ -1,6 +1,6 @@
 import os
 
-from langchain_core.messages import AIMessage, BaseMessage, SystemMessage
+from langchain_core.messages import AIMessage, BaseMessage, HumanMessage, SystemMessage
 
 from app.generated.schema import SectionType, TransformationTool
 from app.utils.prompt_manager import PromptManager
@@ -22,7 +22,7 @@ def get_initial_messages() -> list[BaseMessage]:
     ]
 
 
-def get_context_update_system_message(
+def get_context_update_user_message(
     section_type: SectionType, block_setup: dict | None
 ) -> BaseMessage:
     filtered_keys = {"sourceSectionId", "sourceBlockId"}
@@ -43,11 +43,11 @@ def get_context_update_system_message(
         context = ""
     content = prompt_manager.get_prompt(
         "conversation",
-        "context_update_system_message",
+        "context_update_user_message",
         section_type=section_type.value.lower(),
         context=context,
     )
-    return SystemMessage(content=content)
+    return HumanMessage(content=content, name="hidden")
 
 
 def get_generate_code_system_message(
@@ -58,25 +58,25 @@ def get_generate_code_system_message(
         and TransformationTool(tool) == TransformationTool.DBT
     ):
         content = prompt_manager.get_prompt(
-            "conversation", "generate_dbt_code_system_message", **kwargs
+            "conversation", "generate_dbt_code_user_message", **kwargs
         )
     else:
         content = prompt_manager.get_prompt(
             "conversation",
-            "generate_python_code_system_message",
+            "generate_python_code_user_message",
             section_type=section_type.value.lower(),
             **kwargs,
         )
-    return SystemMessage(content=content)
+    return HumanMessage(content=content, name="hidden")
 
 
-def get_execution_error_system_message(
+def get_execution_error_user_message(
     section_type: SectionType, **kwargs
 ) -> BaseMessage:
     content = prompt_manager.get_prompt(
         "conversation",
-        "execution_error_system_message",
+        "execution_error_user_message",
         section_type=section_type.value.lower(),
         **kwargs,
     )
-    return SystemMessage(content=content)
+    return HumanMessage(content=content, name="hidden")

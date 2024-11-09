@@ -158,7 +158,7 @@ async def test_context_update():
 
     # Test case 1: Different section
     with patch(
-        "app.utils.project_helper.get_context_update_system_message"
+        "app.utils.project_helper.get_context_update_user_message"
     ) as mock_get_message:
         with patch("app.utils.project_helper.add_chat_messages") as mock_add_messages:
             await context_update(redis_client, project_id, "new_section", block_id)
@@ -183,7 +183,7 @@ async def test_context_update():
     redis_client.get_section_data.side_effect = mock_get_section_data
 
     with patch(
-        "app.utils.project_helper.get_context_update_system_message"
+        "app.utils.project_helper.get_context_update_user_message"
     ) as mock_get_message:
         with patch("app.utils.project_helper.add_chat_messages") as mock_add_messages:
             await context_update(redis_client, project_id, section_id, "new_block")
@@ -210,7 +210,7 @@ async def test_context_update():
     redis_client.get_section_data.side_effect = mock_get_section_data_3
 
     with patch(
-        "app.utils.project_helper.get_context_update_system_message"
+        "app.utils.project_helper.get_context_update_user_message"
     ) as mock_get_message:
         with patch("app.utils.project_helper.add_chat_messages") as mock_add_messages:
             await context_update(
@@ -233,7 +233,7 @@ async def test_context_update():
     redis_client.get_section_data.side_effect = mock_get_section_data_3
 
     with patch(
-        "app.utils.project_helper.get_context_update_system_message"
+        "app.utils.project_helper.get_context_update_user_message"
     ) as mock_get_message:
         with patch("app.utils.project_helper.add_chat_messages") as mock_add_messages:
             await context_update(

@@ -96,17 +96,11 @@ export const AnthropicForm = () => {
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
-                    <SelectItem value="claude-3-5-sonnet-20240620">
+                    <SelectItem value="claude-3-5-sonnet-latest">
                       Claude 3.5 Sonnet
                     </SelectItem>
-                    <SelectItem value="claude-3-opus-20240229">
-                      Claude 3 Opus
-                    </SelectItem>
-                    <SelectItem value="claude-3-sonnet-20240229">
-                      Claude 3 Sonnet
-                    </SelectItem>
-                    <SelectItem value="claude-3-haiku-20240307">
-                      Claude 3 Haiku
+                    <SelectItem value="claude-3-5-haiku-latest">
+                      Claude 3.5 Haiku
                     </SelectItem>
                   </SelectContent>
                 </Select>

@@ -14,7 +14,7 @@ from app.generated.schema import (
     TransformationTool,
 )
 from app.utils.agent.graph import create_graph
-from app.utils.converse import get_context_update_system_message
+from app.utils.converse import get_context_update_user_message
 from app.utils.helper import deserialize_df, get_llm, serialize_df, standardize_name
 from app.utils.redis_client import RedisClient
 
@@ -117,7 +117,7 @@ async def context_update(
         block_setup = await redis_client.get_block_data(
             project_id, section_id, block_id, "setup"
         )
-        system_message = get_context_update_system_message(
+        system_message = get_context_update_user_message(
             SectionType(section_metadata["sectionType"]), block_setup
         )
         await add_chat_messages(redis_client, project_id, system_message)
