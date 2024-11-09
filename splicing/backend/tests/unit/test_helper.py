@@ -12,6 +12,7 @@ from app.utils.helper import (
     generate_id,
     get_llm,
     get_schema,
+    merge_if_anthropic_content_blocks,
     serialize_df,
     standardize_name,
 )
@@ -56,6 +57,7 @@ def test_get_llm(llm_type, expected_class):
 
 
 def test_convert_message_to_dict():
+    # Test basic message conversion
     human_msg = HumanMessage(content="Hello")
     ai_msg = AIMessage(content="Hi there")
     system_msg = SystemMessage(content="You are an AI assistant")
@@ -70,6 +72,31 @@ def test_convert_message_to_dict():
         "content": "You are an AI assistant",
     }
 
+    # Test with Anthropic-style content blocks
+    human_msg_blocks = HumanMessage(
+        content=[
+            {"text": "First part"},
+            {"text": "Second part"},
+        ]
+    )
+    ai_msg_blocks = AIMessage(
+        content=[
+            {"text": "Response part 1"},
+            {"text": "Response part 2"},
+            {"not_text": "Should be ignored"},
+        ]
+    )
+
+    assert convert_message_to_dict(human_msg_blocks) == {
+        "role": "user",
+        "content": "First part\nSecond part",
+    }
+    assert convert_message_to_dict(ai_msg_blocks) == {
+        "role": "assistant",
+        "content": "Response part 1\nResponse part 2",
+    }
+
+    # Test error case
     with pytest.raises(ValueError):
         convert_message_to_dict(ToolMessage(content="Hiya", tool_call_id="id"))
 
@@ -96,3 +123,26 @@ def test_format_exception_message():
         formatted = format_exception_message(e)
         assert "ValueError: Test exception" in formatted
         assert "test_helper.py" in formatted  # Should include the file name
+
+
+def test_merge_if_anthropic_content_blocks():
+    # Test with string input
+    content_str = "This is a simple string."
+    assert merge_if_anthropic_content_blocks(content_str) == "This is a simple string."
+
+    # Test with list of dicts containing 'text' keys
+    content_list = [
+        {"text": "First block.", "index": 0},
+        {"text": "Second block.", "index": 1},
+        {"no_text": "This should be ignored.", "index": 2},
+    ]
+    expected = "First block.\nSecond block."
+    assert merge_if_anthropic_content_blocks(content_list) == expected
+
+    # Test with an empty list
+    content_empty = []
+    assert merge_if_anthropic_content_blocks(content_empty) == ""
+
+    # Test with list having no 'text' keys
+    content_no_text = [{"no_text": "A"}, {"another_key": "B"}]
+    assert merge_if_anthropic_content_blocks(content_no_text) == ""
